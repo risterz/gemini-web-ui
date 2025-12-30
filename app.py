@@ -452,8 +452,10 @@ class GeminiClient:
             
             # Cleanup
             if temp_img_path and os.path.exists(temp_img_path):
-                try: os.remove(temp_img_path)
-                except: pass
+                try:
+                    os.remove(temp_img_path)
+                except:
+                    pass
             
             return {
                 "success": True, 
@@ -463,8 +465,10 @@ class GeminiClient:
         except Exception as e:
             print(f"❌ Chat FATAL error: {e}")
             if temp_img_path and os.path.exists(temp_img_path):
-                try: os.remove(temp_img_path)
-                except: pass
+                try:
+                    os.remove(temp_img_path)
+                except:
+                    pass
                 
             return {"success": False, "error": str(e)}
 

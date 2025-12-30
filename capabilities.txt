@@ -1,0 +1,184 @@
+=== METHODS OF GeminiClient ===
+
+Method: close
+Signature: (self, delay: float = 0) -> None
+Docstring: Close the client after a certain period of inactivity, or call manually to close immediately.
+
+Parameters
+----------
+delay: `float`, optional
+    Time to wait before closing the client in seconds.
+
+Method: create_gem
+Signature: (self, name: str, prompt: str, description: str = '') -> gemini_webapi.types.gem.Gem
+Docstring: Create a new custom gem.
+
+Parameters
+----------
+name: `str`
+    Name of the custom gem.
+prompt: `str`
+    System instructions for the custom gem.
+description: `str`, optional
+    Description of the custom gem (has no effect on the model's behavior).
+
+Returns
+-------
+:class:`Gem`
+    The created gem.
+
+Method: delete_gem
+Signature: (self, gem: gemini_webapi.types.gem.Gem | str, **kwargs) -> None
+Docstring: Delete a custom gem.
+
+Parameters
+----------
+gem: `Gem | str`
+    Gem to delete, can be either a `gemini_webapi.types.Gem` object or a gem id string.
+
+Method: fetch_gems
+Signature: (self, include_hidden: bool = False, **kwargs) -> gemini_webapi.types.gem.GemJar
+Docstring: Get a list of available gems from gemini, including system predefined gems and user-created custom gems.
+
+Note that network request will be sent every time this method is called.
+Once the gems are fetched, they will be cached and accessible via `GeminiClient.gems` property.
+
+Parameters
+----------
+include_hidden: `bool`, optional
+    There are some predefined gems that by default are not shown to users (and therefore may not work properly).
+    Set this parameter to `True` to include them in the fetched gem list.
+
+Returns
+-------
+:class:`GemJar`
+    Refer to `gemini_webapi.types.GemJar`.
+
+Method: generate_content
+Signature: (self, prompt: str, files: list[str | pathlib._local.Path] | None = None, model: gemini_webapi.constants.Model | str | dict = <Model.UNSPECIFIED: ('unspecified', {}, False)>, gem: gemini_webapi.types.gem.Gem | str | None = None, chat: Optional[ForwardRef('ChatSession')] = None, **kwargs) -> gemini_webapi.types.modeloutput.ModelOutput
+Docstring: Generates contents with prompt.
+
+Parameters
+----------
+prompt: `str`
+    Prompt provided by user.
+files: `list[str | Path]`, optional
+    List of file paths to be attached.
+model: `Model | str | dict`, optional
+    Specify the model to use for generation.
+    Pass either a `gemini_webapi.constants.Model` enum or a model name string to use predefined models.
+    Pass a dictionary to use custom model header strings ("model_name" and "model_header" keys must be provided).
+gem: `Gem | str`, optional
+    Specify a gem to use as system prompt for the chat session.
+    Pass either a `gemini_webapi.types.Gem` object or a gem id string.
+chat: `ChatSession`, optional
+    Chat data to retrieve conversation history. If None, will automatically generate a new chat id when sending post request.
+kwargs: `dict`, optional
+    Additional arguments which will be passed to the post request.
+    Refer to `httpx.AsyncClient.request` for more information.
+
+Returns
+-------
+:class:`ModelOutput`
+    Output data from gemini.google.com, use `ModelOutput.text` to get the default text reply, `ModelOutput.images` to get a list
+    of images in the default reply, `ModelOutput.candidates` to get a list of all answer candidates in the output.
+
+Raises
+------
+`AssertionError`
+    If prompt is empty.
+`gemini_webapi.TimeoutError`
+    If request timed out.
+`gemini_webapi.GeminiError`
+    If no reply candidate found in response.
+`gemini_webapi.APIError`
+    - If request failed with status code other than 200.
+    - If response structure is invalid and failed to parse.
+
+Method: init
+Signature: (self, timeout: float = 300, auto_close: bool = False, close_delay: float = 300, auto_refresh: bool = True, refresh_interval: float = 540, verbose: bool = True) -> None
+Docstring: Get SNlM0e value as access token. Without this token posting will fail with 400 bad request.
+
+Parameters
+----------
+timeout: `float`, optional
+    Request timeout of the client in seconds. Used to limit the max waiting time when sending a request.
+auto_close: `bool`, optional
+    If `True`, the client will close connections and clear resource usage after a certain period
+    of inactivity. Useful for always-on services.
+close_delay: `float`, optional
+    Time to wait before auto-closing the client in seconds. Effective only if `auto_close` is `True`.
+auto_refresh: `bool`, optional
+    If `True`, will schedule a task to automatically refresh cookies in the background.
+refresh_interval: `float`, optional
+    Time interval for background cookie refresh in seconds. Effective only if `auto_refresh` is `True`.
+verbose: `bool`, optional
+    If `True`, will print more infomation in logs.
+
+Method: reset_close_task
+Signature: (self) -> None
+Docstring: Reset the timer for closing the client when a new request is made.
+
+Method: start_auto_refresh
+Signature: (self) -> None
+Docstring: Start the background task to automatically refresh cookies.
+
+Method: start_chat
+Signature: (self, **kwargs) -> 'ChatSession'
+Docstring: Returns a `ChatSession` object attached to this client.
+
+Parameters
+----------
+kwargs: `dict`, optional
+    Additional arguments which will be passed to the chat session.
+    Refer to `gemini_webapi.ChatSession` for more information.
+
+Returns
+-------
+:class:`ChatSession`
+    Empty chat session object for retrieving conversation history.
+
+Method: update_gem
+Signature: (self, gem: gemini_webapi.types.gem.Gem | str, name: str, prompt: str, description: str = '') -> gemini_webapi.types.gem.Gem
+Docstring: Update an existing custom gem.
+
+Parameters
+----------
+gem: `Gem | str`
+    Gem to update, can be either a `gemini_webapi.types.Gem` object or a gem id string.
+name: `str`
+    New name for the custom gem.
+prompt: `str`
+    New system instructions for the custom gem.
+description: `str`, optional
+    New description of the custom gem (has no effect on the model's behavior).
+
+Returns
+-------
+:class:`Gem`
+    The updated gem.
+
+=== CLASS DOCSTRING ===
+
+Async httpx client interface for gemini.google.com.
+
+`secure_1psid` must be provided unless the optional dependency `browser-cookie3` is installed, and
+you have logged in to google.com in your local browser.
+
+Parameters
+----------
+secure_1psid: `str`, optional
+    __Secure-1PSID cookie value.
+secure_1psidts: `str`, optional
+    __Secure-1PSIDTS cookie value, some google accounts don't require this value, provide only if it's in the cookie list.
+proxy: `str`, optional
+    Proxy URL.
+kwargs: `dict`, optional
+    Additional arguments which will be passed to the http client.
+    Refer to `httpx.AsyncClient` for more information.
+
+Raises
+------
+`ValueError`
+    If `browser-cookie3` is installed but cookies for google.com are not found in your local browser storage.
+

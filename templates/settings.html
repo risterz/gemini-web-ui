@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Gemini Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0" y1="0" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#14b8a6" />
+                                <stop offset="100%" stop-color="#06b6d4" />
+                            </linearGradient>
+                        </defs>
+                        <rect x="2" y="2" width="28" height="28" rx="8" fill="url(#logoGradient)" fill-opacity="0.2" />
+                        <path d="M16 6L22 12L16 18L10 12L16 6Z" fill="#06b6d4" />
+                        <path d="M16 14L22 20L16 26L10 20L16 14Z" fill="#14b8a6" />
+                    </svg>
+                    <span class="logo-text">Gemini Studio</span>
+                </div>
+
+                <div class="header-status">
+                    <a href="/" class="nav-back-btn">
+                        ← Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <div class="hero" style="padding: 40px 0 32px;">
+                <h1 class="hero-title" style="font-size: 2.5rem;">⚙️ Settings</h1>
+                <p class="hero-subtitle">Update your Gemini authentication cookies to keep the AI running.</p>
+            </div>
+
+            <!-- Settings Form -->
+            <div class="control-panel" style="max-width: 600px; margin: 0 auto;">
+                <div id="messageBox"
+                    style="display: none; padding: 16px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label
+                        style="display: block; color: var(--text-main); margin-bottom: 8px; font-size: 0.95rem; font-weight: 600;">
+                        __Secure-1PSID
+                    </label>
+                    <input type="password" id="psidInput" class="prompt-input"
+                        placeholder="Paste your __Secure-1PSID cookie here..."
+                        style="width: 100%; height: 48px; min-height: 48px; font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">
+                        Find this in DevTools → Application → Cookies → google.com
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 32px;">
+                    <label
+                        style="display: block; color: var(--text-main); margin-bottom: 8px; font-size: 0.95rem; font-weight: 600;">
+                        __Secure-1PSIDTS
+                    </label>
+                    <input type="password" id="psidtsInput" class="prompt-input"
+                        placeholder="Paste your __Secure-1PSIDTS cookie here..."
+                        style="width: 100%; height: 48px; min-height: 48px; font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">
+                        Located right below __Secure-1PSID in the same cookie list
+                    </p>
+                </div>
+
+                <!-- Cookie Tips Section -->
+                <div class="cookie-tips"
+                    style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 1.2rem; margin-right: 8px;">💡</span>
+                        <strong style="color: #fff; font-size: 1rem;">Why do cookies expire?</strong>
+                    </div>
+                    <ul
+                        style="margin: 0; padding-left: 20px; line-height: 1.6; color: var(--text-muted); font-size: 0.9rem;">
+                        <li style="margin-bottom: 8px;">Google rotates these keys frequently for security.</li>
+                        <li style="margin-bottom: 8px;"><strong style="color: #67e8f9;">Pro Tip:</strong> Open
+                            <em>Gemini.google.com</em> in an <strong>Incognito Window</strong> to copy cookies, then
+                            close that window immediately.
+                        </li>
+                        <li style="margin-bottom: 8px;">Do not use the Gemini website in another tab while this app is
+                            running.</li>
+                        <li>If your IP address changes (VPN toggle), the session dies instantly.</li>
+                    </ul>
+                </div>
+
+                <button id="saveBtn" class="generate-btn" style="width: 100%;">
+                    <span class="btn-text">💾 Save & Restart Connection</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const saveBtn = document.getElementById('saveBtn');
+        const psidInput = document.getElementById('psidInput');
+        const psidtsInput = document.getElementById('psidtsInput');
+        const messageBox = document.getElementById('messageBox');
+
+        function showMessage(text, isSuccess) {
+            messageBox.textContent = text;
+            messageBox.style.display = 'block';
+            messageBox.style.background = isSuccess
+                ? 'rgba(20, 184, 166, 0.2)'
+                : 'rgba(239, 68, 68, 0.2)';
+            messageBox.style.color = isSuccess ? '#5eead4' : '#fca5a5';
+            messageBox.style.border = isSuccess
+                ? '1px solid rgba(20, 184, 166, 0.3)'
+                : '1px solid rgba(239, 68, 68, 0.3)';
+        }
+
+        saveBtn.addEventListener('click', async () => {
+            const psid = psidInput.value.trim();
+            const psidts = psidtsInput.value.trim();
+
+            if (!psid || !psidts) {
+                showMessage('⚠️ Please enter both cookies!', false);
+                return;
+            }
+
+            const originalText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="btn-text">Saving...</span>';
+
+            try {
+                const response = await fetch('/api/update_cookies', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ psid, psidts })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('✅ Cookies saved successfully! Redirecting...', true);
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (e) {
+                console.error(e);
+                showMessage('❌ Failed to save: ' + e.message, false);
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        });
+    </script>
+</body>
+
+</html>

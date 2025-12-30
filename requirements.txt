@@ -1,0 +1,8 @@
+flask
+flask-cors
+pillow
+requests
+python-dotenv
+werkzeug
+gemini_webapi
+gunicorn

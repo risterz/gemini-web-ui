@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRACK GEMINI - Premium Generation</title>
+    <meta name="description" content="Generate stunning AI images using Gemini">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/static/css/styles.css?v=2">
+
+    <!-- Favicon (SVG) -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">
+                        <!-- Logo Left -->
+                        <div class="logo">
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="logoGradient" x1="0" y1="0" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#14b8a6" />
+                                        <stop offset="100%" stop-color="#06b6d4" />
+                                    </linearGradient>
+                                </defs>
+                                <rect x="2" y="2" width="28" height="28" rx="8" fill="url(#logoGradient)"
+                                    fill-opacity="0.2" />
+                                <path d="M16 6L22 12L16 18L10 12L16 6Z" fill="#06b6d4" />
+                                <path d="M16 14L22 20L16 26L10 20L16 14Z" fill="#14b8a6" />
+                            </svg>
+                            <span class="logo-text">CRACK_GEMINI</span>
+                        </div>
+
+                        <!-- Right Side Group (Unified) -->
+                        <div class="header-right" style="gap: 12px;">
+
+                            <!-- Status & User Pill -->
+                            <div class="glass-pill"
+                                style="display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px;">
+                                <!-- Status Dot -->
+                                <div id="statusDot" class="status-dot" title="Connecting..."></div>
+
+                                <!-- User Text -->
+                                <span style="font-size: 0.9rem; color: #e5e7eb; font-weight: 500;">
+                                    Harister
+                                </span>
+                            </div>
+
+                            <!-- Settings Button (Separate, High Contrast) -->
+                            <a href="/settings" class="nav-btn"
+                                style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: transparent; color: #9ca3af; text-decoration: none; border-radius: 100px; transition: all 0.2s;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path
+                                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                                    </path>
+                                </svg>
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs" style="display: flex; gap: 16px; margin: 32px 0 0 0; justify-content: center;">
+                <button class="nav-tab active" data-tab="imageGen">🎨 Image Studio</button>
+                <button class="nav-tab" data-tab="chat">💬 Chat Studio</button>
+            </div>
+
+            <!-- Image Generator Section -->
+            <div id="imageGenSection" class="tab-content active" style="animation: fadeIn 0.3s ease;">
+                <!-- Hero Section -->
+                <div class="hero">
+                    <h1 class="hero-title" data-text="Imagine. Create. Inspire.">Imagine. Create. Inspire.</h1>
+                    <p class="hero-subtitle">Premium AI Image Generation with Nano Banana</p>
+
+                    <!-- Connection Status (Hidden but functional) -->
+                    <!-- Status moved to header -->
+                </div>
+
+                <!-- Control Panel -->
+                <div class="control-panel">
+
+                    <!-- Prompt Section -->
+                    <div class="prompt-container">
+                        <div class="label">
+                            <span class="label-text">Describe your vision</span>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <label class="toggle-switch"
+                                    title="Toggle HD/Professional Mode (Photorealistic, HDR, etc.)">
+                                    <input type="checkbox" id="hdModeToggle">
+                                    <span class="slider round"></span>
+                                    <span class="toggle-label">HD Mode</span>
+                                </label>
+                                <button id="enhanceBtn" class="enhance-btn" title="Magic Enhance with Gemini">
+                                    ✨ Magic Enhance
+                                </button>
+                                <span class="label-hint" id="charCount">0 / 500</span>
+                            </div>
+                        </div>
+                        <textarea id="promptInput" class="prompt-input"
+                            placeholder="A futuristic city with neon lights, cyberpunk style, highly detailed, 8k resolution..."
+                            maxlength="500"></textarea>
+
+                        <div class="suggestion-chips">
+                            <button class="chip" data-style="natural, realistic, 8k photography, raw photo">🌿
+                                Natural</button>
+                            <button class="chip" data-style="photorealistic">📸 Photorealistic</button>
+                            <button class="chip" data-style="cinematic lighting">🎬 Cinematic</button>
+                            <button class="chip" data-style="anime style">🎨 Anime</button>
+                            <button class="chip" data-style="3d render">🧊 3D Render</button>
+                            <button class="chip" data-style="cyberpunk">🌃 Cyberpunk</button>
+                        </div>
+                    </div>
+
+                    <div class="panel-row">
+                        <!-- Aspect Ratio -->
+                        <div class="panel-section">
+                            <div class="label">
+                                <span class="label-text">Aspect Ratio</span>
+                            </div>
+                            <div class="aspect-ratio-selector">
+                                <button class="aspect-btn active" data-ratio="square">
+                                    <div class="aspect-icon square-icon"></div>
+                                    <span class="aspect-label">Square</span>
+                                </button>
+                                <button class="aspect-btn" data-ratio="landscape">
+                                    <div class="aspect-icon landscape-icon"></div>
+                                    <span class="aspect-label">Landscape</span>
+                                </button>
+                                <button class="aspect-btn" data-ratio="portrait">
+                                    <div class="aspect-icon portrait-icon"></div>
+                                    <span class="aspect-label">Portrait</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quantity & Ref Image -->
+                        <div class="panel-section">
+                            <div class="label">
+                                <span class="label-text">Quantity: <span id="quantityValue"
+                                        style="color:white; font-weight:bold;">4</span></span>
+                                <span class="label-hint" id="timeEstimate">~8s</span>
+                            </div>
+                            <div class="quantity-control" style="margin-bottom: 24px;">
+                                <div class="quantity-selector">
+                                    <button class="qty-btn" data-qty="1">1</button>
+                                    <button class="qty-btn" data-qty="2">2</button>
+                                    <button class="qty-btn" data-qty="3">3</button>
+                                    <button class="qty-btn active" data-qty="4">4</button>
+                                </div>
+                            </div>
+
+                            <!-- Mini Upload (Compact) -->
+                            <div class="label">
+                                <span class="label-text">Reference Image (Optional)</span>
+                            </div>
+                            <div class="upload-zone" id="uploadZone"
+                                style="border: 1px dashed var(--border-glass); padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s;">
+                                <input type="file" id="fileInput" accept="image/*" hidden>
+                                <div class="upload-content" id="uploadContent"
+                                    style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);">Drop image here</span>
+                                </div>
+                                <div class="upload-preview" id="uploadPreview"
+                                    style="display: none; position: relative;">
+                                    <img id="previewImage" style="max-height: 60px; border-radius: 8px;">
+                                    <button id="removeImage"
+                                        style="position: absolute; top: -5px; right: -5px; background: red; border: none; border-radius: 50%; color: white; width: 20px; height: 20px; cursor: pointer;">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button class="generate-btn" id="generateBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                        </svg>
+                        <span class="btn-text">Generate Masterpiece</span>
+                    </button>
+
+                    <!-- Inline Progress Bar (Hidden by default) -->
+                    <div class="progress-container" id="progressContainer" style="display: none; margin-top: 24px;">
+                        <div
+                            style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted);">
+                            <span id="progressText">Initializing...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Removed old Progress Indicator placement -->
+                <div class="progress-bar"
+                    style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; max-width: 400px; margin: 0 auto 16px;">
+                    <div class="progress-fill" id="progressFill"
+                        style="height: 100%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); width: 0%; transition: width 0.3s;">
+                    </div>
+                </div>
+                <p class="progress-text" id="progressText" style="color: var(--text-muted);">Creating your vision...</p>
+            </div>
+
+            <!-- Results Gallery -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-header">
+                    <h2 class="results-title">Your Creations</h2>
+                    <button class="download-all-btn" id="downloadAllBtn" class="enhance-btn"
+                        style="background: #fff; border: 3px solid #000; color: #000; padding: 10px 20px; font-weight: 700; cursor: pointer; box-shadow: 4px 4px 0 0 #000; transition: all 0.2s;">
+                        Download All
+                    </button>
+                </div>
+                <div class="gallery" id="gallery"></div>
+            </div>
+
+        </div> <!-- End Image Gen Section -->
+
+        <!-- Chat Section -->
+        <div id="chatSection" class="tab-content" style="display: none; animation: fadeIn 0.3s ease;">
+            <div class="chat-container"
+                style="background: var(--neo-white); border: var(--border-thick) solid var(--border-color); box-shadow: var(--shadow-offset-lg) var(--shadow-offset-lg) 0 0 var(--border-color); margin: 40px auto 80px auto; padding: 0; display: flex; flex-direction: column; height: 600px; max-width: 900px;">
+
+                <div class="chat-header"
+                    style="padding: 20px; border-bottom: var(--border-thick) solid var(--border-color); background: var(--neo-yellow); display: flex; justify-content: space-between; align-items: center;">
+                    <div class="chat-title" style="font-weight: 900; font-size: 1.2rem; text-transform: uppercase;">
+                        CRACK_GEMINI CHAT</div>
+                    <div class="chat-status"
+                        style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem;">
+                        <div class="status-dot connected"></div> Online
+                    </div>
+                </div>
+
+                <div class="chat-history" id="chatHistory"
+                    style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Welcome Message -->
+                    <div class="chat-message ai" style="align-self: flex-start; max-width: 80%;">
+                        <div class="message-bubble"
+                            style="background: var(--neo-cream); border: var(--border-thick) solid var(--border-color); padding: 16px; box-shadow: 4px 4px 0 0 var(--border-color); font-weight: 500;">
+                            Hello! I'm Gemini. I can help you refine your prompts or just have a chat. How can I assist
+                            you today?
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input Area -->
+                <div class="chat-input-area"
+                    style="padding: 20px; border-top: var(--border-thick) solid var(--border-color); background: var(--neo-white); display: flex; flex-direction: column; gap: 12px;">
+
+                    <!-- Image Preview -->
+                    <div id="chatImagePreview"
+                        style="display: none; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 8px; width: fit-content; position: relative;">
+                        <img id="chatPreviewImg" style="height: 60px; border-radius: 4px; display: block;">
+                        <button id="removeChatImage"
+                            style="position: absolute; top: -8px; right: -8px; background: #FF5252; color: white; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">×</button>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: flex-end; width: 100%;">
+                        <!-- Upload Button -->
+                        <div style="position: relative;">
+                            <input type="file" id="chatFileInput" accept="image/*" hidden>
+                            <button id="chatUploadBtn" class="chat-action-btn" title="Add Image"
+                                style="background: var(--neo-white); color: var(--text-main); border: var(--border-thick) solid var(--border-color); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 3px 3px 0 0 var(--border-color); transition: 0.1s;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <textarea id="chatInput" placeholder="Type a message..." rows="1"
+                            style="flex: 1; background: var(--neo-cream); border: var(--border-thick) solid var(--border-color); padding: 12px 16px; font-family: var(--font-display); resize: none; min-height: 50px; font-size: 1rem; border-radius: 0; box-shadow: inset 3px 3px 0 0 rgba(0,0,0,0.05);"></textarea>
+
+                        <button id="sendChatBtn" class="send-chat-btn"
+                            style="background: var(--neo-pink); color: white; border: var(--border-thick) solid var(--border-color); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 3px 3px 0 0 var(--border-color); transition: 0.1s;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div> <!-- End Container -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.9rem;">
+        <div class="container">
+            <p>&copy; 2025 Harister Design. Powered by Gemini.</p>
+        </div>
+    </footer>
+
+    <!-- Lightbox (Same functionality) -->
+    <div class="lightbox" id="lightbox"
+        style="display: none; position: fixed; inset: 0; z-index: 1000; justify-content: center; align-items: center;">
+        <div class="lightbox-backdrop" id="lightboxBackdrop"
+            style="position: absolute; inset: 0; background: rgba(0,0,0,0.9);"></div>
+        <div class="lightbox-content" style="position: relative; z-index: 10; max-width: 90vw; max-height: 90vh;">
+            <button class="lightbox-close" id="lightboxClose"
+                style="position: absolute; top: -40px; right: 0; background: none; border: none; color: white; cursor: pointer;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <img id="lightboxImage"
+                style="max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 0 40px rgba(0,0,0,0.5);">
+        </div>
+    </div>
+
+    <!-- Premium Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay"
+        style="display: none; position: fixed; inset: 0; align-items: center; justify-content: center; flex-direction: column; z-index: 2000;">
+        <div class="galaxy-loader"></div>
+        <div class="loading-text" id="loadingText">Manifesting Your Vision...</div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal"
+        style="display: none; position: fixed; inset: 0; z-index: 3000; align-items: center; justify-content: center;">
+        <div id="settingsBackdrop"
+            style="position: absolute; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);"></div>
+        <div class="control-panel" id="settingsContent"
+            style="position: relative; z-index: 10; max-width: 500px; width: 90%; animation: slideUp 0.3s ease-out; margin: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2
+                    style="margin: 0; font-size: 1.5rem; background: linear-gradient(135deg, #fff 0%, #5eead4 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                    ⚙️ Configuration</h2>
+                <button id="closeSettingsBtn"
+                    style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 2rem; line-height: 1;">&times;</button>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                Paste your Gemini cookies to enable AI image generation.
+            </p>
+
+            <div style="margin-bottom: 16px;">
+                <label
+                    style="display: block; color: var(--text-main); margin-bottom: 8px; font-size: 0.9rem; font-weight: 500;">__Secure-1PSID</label>
+                <input type="password" id="inputPsid" class="prompt-input"
+                    placeholder="Paste __Secure-1PSID cookie here..."
+                    style="width: 100%; height: 40px; min-height: 40px;">
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label
+                    style="display: block; color: var(--text-main); margin-bottom: 8px; font-size: 0.9rem; font-weight: 500;">__Secure-1PSIDTS</label>
+                <input type="password" id="inputPsidts" class="prompt-input"
+                    placeholder="Paste __Secure-1PSIDTS cookie here..."
+                    style="width: 100%; height: 40px; min-height: 40px;">
+            </div>
+
+            <button id="saveSettingsBtn" class="generate-btn" style="width: 100%;">
+                <span class="btn-text">💾 Save & Restart Connection</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/static/js/app.js?v=2"></script>
+</body>
+
+</html>

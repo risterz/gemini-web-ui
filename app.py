@@ -731,7 +731,14 @@ def generate_images():
             return jsonify({'success': False, 'error': 'Quantity must be between 1 and 4'}), 400
         
         # Extract user cookies if provided
-        user_cookies = data.get('cookies')
+        user_cookies_data = data.get('cookies')
+        user_cookies = None
+        
+        if user_cookies_data and user_cookies_data.get('psid'):
+            user_cookies = {
+                '__Secure-1PSID': user_cookies_data.get('psid'),
+                '__Secure-1PSIDTS': user_cookies_data.get('psidts')
+            }
 
         # Check cookies
         is_valid, message = gemini_client.validate_cookies(cookies=user_cookies)
@@ -1029,17 +1036,20 @@ def send_chat_message():
             return jsonify({'success': False, 'error': 'Message or image is required'}), 400
             
         # Extract user cookies if provided
-        user_cookies = data.get('cookies')
+        user_cookies_data = data.get('cookies')
+        user_cookies = None
+        
+        if user_cookies_data and user_cookies_data.get('psid'):
+            user_cookies = {
+                '__Secure-1PSID': user_cookies_data.get('psid'),
+                '__Secure-1PSIDTS': user_cookies_data.get('psidts')
+            }
         
         # Run async method in sync context
         # If user_cookies contains PSID/PSIDTS, temporary client will use them
-        if user_cookies and user_cookies.get('psid'):
-            # Temporarily inject into gemini_client for this request? 
+        if user_cookies:
             # Better approach: Pass cookies to send_message
-            result = asyncio.run(gemini_client.send_message(message, image, cookies={
-                '__Secure-1PSID': user_cookies.get('psid'),
-                '__Secure-1PSIDTS': user_cookies.get('psidts')
-            }))
+            result = asyncio.run(gemini_client.send_message(message, image, cookies=user_cookies))
         else:
             result = asyncio.run(gemini_client.send_message(message, image))
         

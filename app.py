@@ -16,7 +16,7 @@ from dotenv import load_dotenv, set_key
 import json
 from gemini_webapi import GeminiClient as RealGeminiClient
 import io
-from enhancer import ImageEnhancer
+# from enhancer import ImageEnhancer
 
 # Load environment variables
 load_dotenv()
@@ -484,7 +484,7 @@ class GeminiClient:
 
 # Initialize Gemini client
 gemini_client = GeminiClient(GEMINI_COOKIES)
-image_enhancer = ImageEnhancer() # will download model on startup
+# image_enhancer = ImageEnhancer() # Removed legacy upscaler
 
 
 def allowed_file(filename):
@@ -966,47 +966,10 @@ def proxy_image():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/upscale', methods=['POST'])
-def upscale_image_endpoint():
-    """Upscale an image using OpenCV EDSR"""
-    try:
-        data = request.json
-        image_url = data.get('image')
-        
-        if not image_url:
-            return jsonify({'success': False, 'error': 'No image URL provided'})
-            
-        # Check if it's a local generated image
-        if '/static/generated/' in image_url:
-            local_filename = image_url.split('/')[-1]
-            input_path = os.path.join('static', 'generated', local_filename)
-        else:
-            return jsonify({'success': False, 'error': 'Only locally generated images can be upscaled'}), 400
-
-        if not os.path.exists(input_path):
-             return jsonify({'success': False, 'error': 'Source image file not found'})
-             
-        # Define output path
-        filename = f"upscaled_{int(time.time())}_{local_filename}"
-        output_path = os.path.join('static', 'generated', filename)
-        
-        print(f"✨ Upscaling {input_path} -> {output_path}...")
-        
-        # Upscale
-        start_time = time.time()
-        image_enhancer.upscale_image(input_path, output_path)
-        duration = time.time() - start_time
-        
-        print(f"✅ Upscale complete in {duration:.2f}s")
-        
-        return jsonify({
-            'success': True,
-            'image_url': f"/static/generated/{filename}"
-        })
-        
-    except Exception as e:
-        print(f"❌ Upscale error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+# Endpoint removed - deprecated/legacy code
+# @app.route('/api/upscale', methods=['POST'])
+# def upscale_image_endpoint():
+#     return jsonify({'error': 'Deprecated'}), 410
 
 
 @app.route('/static/<path:path>')

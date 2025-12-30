@@ -253,8 +253,7 @@ class GeminiClient:
                     # Create TEMP client with specific cookies for this request
                     temp_client = RealGeminiClient(
                         current_cookies.get('__Secure-1PSID'), 
-                        current_cookies.get('__Secure-1PSIDTS'), 
-                        proxies=None
+                        current_cookies.get('__Secure-1PSIDTS')
                     )
                     await temp_client.init(timeout=30, auto_close=False)
                     

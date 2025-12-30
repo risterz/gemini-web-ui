@@ -97,12 +97,15 @@ class GeminiClient:
             traceback.print_exc()
             self.client = None
     
-    def validate_cookies(self):
+    def validate_cookies(self, cookies=None):
         """Check if cookies are valid"""
-        if not self.cookies.get('__Secure-1PSID'):
+        target_cookies = cookies or self.cookies
+        
+        if not target_cookies.get('__Secure-1PSID'):
             return False, "Missing __Secure-1PSID cookie"
         
-        if not self.client:
+        # If using global cookies (no override), check if client is ready
+        if not cookies and not self.client:
             return False, "Gemini client not initialized"
         
         return True, "Cookies are valid"
@@ -133,20 +136,17 @@ class GeminiClient:
                 
             return {"success": False, "error": str(e)}
 
-    def generate_images(self, prompt, aspect_ratio='square', quantity=4, reference_image=None, style_preset=None, hd_mode=False):
+    def generate_images(self, prompt, aspect_ratio='square', quantity=4, reference_image=None, style_preset=None, hd_mode=False, cookies=None):
         """
         Generate images using real Gemini API
-        
         Args:
-            prompt: Text description for image generation
-            aspect_ratio: 'square', 'landscape', or 'portrait'
-            quantity: Number of images (1-4)
-            reference_image: Optional base64 encoded reference image
-            style_preset: Optional style name (e.g., 'Cyberpunk', 'Watercolor')
-        
-        Returns:
-            dict with success status, images list, and metadata
+            cookies: Optional dict override
         """
+        # Determine cookies
+        current_cookies = cookies or self.cookies
+        if not current_cookies or not current_cookies.get('__Secure-1PSID'):
+             global GEMINI_COOKIES
+             current_cookies = GEMINI_COOKIES
         
         start_time = time.time()
         
@@ -250,15 +250,21 @@ class GeminiClient:
                 
                 # Run async generation - create new loop each time to avoid conflicts
                 async def do_generation():
-                    # Initialize client if needed
-                    if not hasattr(self.client, '_initialized') or not self.client._initialized:
-                        await self.client.init(timeout=30, auto_close=False)
-                        self.client._initialized = True
+                    # Create TEMP client with specific cookies for this request
+                    temp_client = RealGeminiClient(
+                        current_cookies.get('__Secure-1PSID'), 
+                        current_cookies.get('__Secure-1PSIDTS'), 
+                        proxies=None
+                    )
+                    await temp_client.init(timeout=30, auto_close=False)
                     
-                    # Generate content with files if present
-                    # Note: We pass the list of file paths
-                    response = await self.client.generate_content(generation_prompt, files=generation_files)
-                    return response
+                    try:
+                        # Generate content with files if present
+                        response = await temp_client.generate_content(generation_prompt, files=generation_files)
+                        return response
+                    except Exception as e:
+                        print(f"⚠️ Generation error: {e}")
+                        raise e
                 
                 # Use asyncio.run which handles loop creation and cleanup properly
                 try:
@@ -387,14 +393,15 @@ class GeminiClient:
             print(f"❌ Failed to init chat: {e}")
             return False
 
-    async def send_message(self, message, image=None):
+    async def send_message(self, message, image=None, cookies=None):
         """Send a message to Gemini (Stateless/No History)"""
         
-        # Re-initialize client to ensure fresh aiohttp session in current loop
-        # Use self.cookies or global GEMINI_COOKIES as fallback
-        current_cookies = self.cookies
+        # Determine which cookies to use
+        # Priority: Method Arg > Instance Cookies > Global Env Vars
+        current_cookies = cookies or self.cookies
+        
         if not current_cookies or not current_cookies.get('__Secure-1PSID'):
-             # Fallback to global if instance cookies are empty
+             # Fallback to global if empty
              global GEMINI_COOKIES
              current_cookies = GEMINI_COOKIES
         
@@ -723,14 +730,17 @@ def generate_images():
         if quantity < 1 or quantity > 4:
             return jsonify({'success': False, 'error': 'Quantity must be between 1 and 4'}), 400
         
+        # Extract user cookies if provided
+        user_cookies = data.get('cookies')
+
         # Check cookies
-        is_valid, message = gemini_client.validate_cookies()
+        is_valid, message = gemini_client.validate_cookies(cookies=user_cookies)
         if not is_valid:
             return jsonify({
                 'success': False,
                 'error': 'Cookie authentication failed',
                 'details': message,
-                'action': 'Please update your cookies in the .env file'
+                'action': 'Please update your cookies in Settings'
             }), 401
         
         # Generate images
@@ -740,7 +750,8 @@ def generate_images():
             quantity=quantity,
             reference_image=reference_image,
             style_preset=selected_style, # Pass the style
-            hd_mode=hd_mode # Pass the toggle state
+            hd_mode=hd_mode, # Pass the toggle state
+            cookies=user_cookies # Pass user cookies
         )
         
         return jsonify(result)
@@ -1054,8 +1065,20 @@ def send_chat_message():
         if not message and not image:
             return jsonify({'success': False, 'error': 'Message or image is required'}), 400
             
+        # Extract user cookies if provided
+        user_cookies = data.get('cookies')
+        
         # Run async method in sync context
-        result = asyncio.run(gemini_client.send_message(message, image))
+        # If user_cookies contains PSID/PSIDTS, temporary client will use them
+        if user_cookies and user_cookies.get('psid'):
+            # Temporarily inject into gemini_client for this request? 
+            # Better approach: Pass cookies to send_message
+            result = asyncio.run(gemini_client.send_message(message, image, cookies={
+                '__Secure-1PSID': user_cookies.get('psid'),
+                '__Secure-1PSIDTS': user_cookies.get('psidts')
+            }))
+        else:
+            result = asyncio.run(gemini_client.send_message(message, image))
         
         if result['success']:
             return jsonify(result)

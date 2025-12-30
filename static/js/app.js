@@ -91,7 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
     checkSystemHealth();
     updateCharCount();
     updateCharCount();
+    updateCharCount();
     selectQuantity(state.selectedQuantity);
+    loadSavedSettings(); // Load cookies
     initializeChatSystem();
 });
 
@@ -452,7 +454,12 @@ async function generateImages() {
             aspect_ratio: state.selectedAspectRatio,
             quantity: state.selectedQuantity,
             style: state.selectedStyle, // Send selected style
-            hd_mode: document.getElementById('hdModeToggle').checked // Send HD mode state
+            hd_mode: document.getElementById('hdModeToggle').checked, // Send HD mode state
+            // Send user cookies
+            cookies: {
+                psid: localStorage.getItem('gemini_psid'),
+                psidts: localStorage.getItem('gemini_psidts')
+            }
         };
 
         if (state.referenceImage) {
@@ -825,35 +832,26 @@ async function saveSettings() {
         return;
     }
 
-    // Show loading info on button
-    const btn = elements.saveSettingsBtn;
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="btn-text">Saving...</span>';
+    // Save to LocalStorage (User's browser)
+    localStorage.setItem('gemini_psid', psid);
+    localStorage.setItem('gemini_psidts', psidts);
 
-    try {
-        const response = await fetch('/api/update_cookies', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ psid, psidts })
-        });
+    // Also update UI to show saved state
+    elements.saveSettingsBtn.innerHTML = '<span class="btn-text">✅ Saved to Browser!</span>';
+    setTimeout(() => {
+        elements.saveSettingsBtn.innerHTML = '<span class="btn-text">💾 Save Settings</span>';
+        elements.settingsModal.style.display = 'none';
+        showError("Cookies saved! You can now use the app.", "success");
+    }, 1000);
+}
 
-        const data = await response.json();
+// Load saved cookies on startup
+function loadSavedSettings() {
+    const psid = localStorage.getItem('gemini_psid');
+    const psidts = localStorage.getItem('gemini_psidts');
 
-        if (data.success) {
-            btn.innerHTML = '<span class="btn-text">✅ Saved! Restarting...</span>';
-            setTimeout(() => {
-                location.reload(); // Reload to refresh session
-            }, 1000);
-        } else {
-            throw new Error(data.error);
-        }
-    } catch (e) {
-        console.error(e);
-        showError("Failed to save settings: " + e.message);
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-    }
+    if (psid) elements.inputPsid.value = psid;
+    if (psidts) elements.inputPsidts.value = psidts;
 }
 
 // ============================================
@@ -973,10 +971,20 @@ async function sendChatMessage() {
     }
 
     try {
+        const payload = {
+            message: message,
+            image: imageBase64,
+            // Send user cookies if they exist
+            cookies: {
+                psid: localStorage.getItem('gemini_psid'),
+                psidts: localStorage.getItem('gemini_psidts')
+            }
+        };
+
         const response = await fetch('/api/chat/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, image: imageBase64 })
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();

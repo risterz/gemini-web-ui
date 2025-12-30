@@ -316,7 +316,7 @@ class GeminiClient:
                                 'alt': getattr(image, 'alt', prompt[:100])
                             })
                 else:
-                    print(f"⚠️ No images in this response")
+                    print(f"⚠️ No images in this response. Raw response: {response}")
                     # If we got no images, wait a bit before retrying
                     time.sleep(1)
             

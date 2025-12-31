@@ -242,8 +242,9 @@ class GeminiClient:
             # So we'll make multiple requests if needed to reach the desired quantity
             all_generated_images = []
             attempts = 0
-            max_attempts = quantity + 2  # Reduced from quantity * 6 to avoid long waits
-            max_duration = 60 # 60 seconds soft limit per request
+            # Increase limits to support 4 images reliably
+            max_attempts = quantity * 3 + 2 
+            max_duration = 180 # 3 minutes soft limit to allow for 4 images
             
             # Initialize Client ONCE
             temp_client = None

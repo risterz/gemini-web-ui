@@ -87,14 +87,27 @@ const elements = {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    initializeEventListeners();
-    checkSystemHealth();
-    updateCharCount();
-    updateCharCount();
-    updateCharCount();
-    selectQuantity(state.selectedQuantity);
-    loadSavedSettings(); // Load cookies
-    initializeChatSystem();
+    console.log("🚀 Application Starting...");
+
+    // 1. Initialize Chat FIRST to ensure buttons work even if other things fail
+    try {
+        initializeChatSystem();
+    } catch (e) {
+        console.error("❌ Chat System Initialization Failed:", e);
+    }
+
+    // 2. Initialize Core Event Listeners
+    try {
+        initializeEventListeners();
+    } catch (e) {
+        console.error("❌ Event Listeners Initialization Failed:", e);
+    }
+
+    // 3. Other Systems
+    try { checkSystemHealth(); } catch (e) { console.warn("Health check error", e); }
+    try { updateCharCount(); } catch (e) { }
+    try { selectQuantity(state.selectedQuantity); } catch (e) { }
+    try { loadSavedSettings(); } catch (e) { }
 });
 
 // ============================================
@@ -1005,42 +1018,60 @@ function initializeChatSystem() {
 }
 
 async function sendChatMessage() {
-    const input = elements.chatInput;
+    console.log("📨 sendChatMessage called");
+
+    // Direct DOM access to ensure we have the latest elements
+    const input = document.getElementById('chatInput');
+    const chatHistory = document.getElementById('chatHistory');
+    const chatImagePreview = document.getElementById('chatImagePreview');
+    const chatPreviewImg = document.getElementById('chatPreviewImg');
+    const chatFileInput = document.getElementById('chatFileInput');
+    const loadingId = 'loading-' + Date.now();
+
+    if (!input) {
+        console.error("❌ Critical: chatInput element not found in DOM");
+        return;
+    }
+
     const message = input.value.trim();
-    const history = elements.chatHistory;
 
     // Check for image
     let imageBase64 = null;
-    if (elements.chatImagePreview.style.display !== 'none') {
-        imageBase64 = elements.chatPreviewImg.src;
+    if (chatImagePreview && chatImagePreview.style.display !== 'none' && chatPreviewImg) {
+        imageBase64 = chatPreviewImg.src;
+        console.log("📸 Image attached");
     }
 
-    if (!message && !imageBase64) return;
+    if (!message && !imageBase64) {
+        console.warn("⚠️ Empty message and no image, aborting send");
+        return;
+    }
 
     // 1. Append User Message
     appendMessage(message, 'user', imageBase64);
     input.value = '';
 
     // Clear image preview
-    elements.chatFileInput.value = '';
-    elements.chatImagePreview.style.display = 'none';
+    if (chatFileInput) chatFileInput.value = '';
+    if (chatImagePreview) chatImagePreview.style.display = 'none';
 
     // 2. Show Loading Bubble
-    const loadingId = 'loading-' + Date.now();
-    const loadingBubble = document.createElement('div');
-    loadingBubble.className = 'chat-message ai';
-    loadingBubble.id = loadingId;
-    loadingBubble.innerHTML = `
-        <div class="message-bubble" style="background: var(--neo-cream); border: var(--border-thick) solid var(--border-color); padding: 16px; box-shadow: 4px 4px 0 0 var(--border-color); font-weight: 500;">
-            <div style="display: flex; gap: 4px; align-items: center;">
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'chat-message ai';
+    loadingDiv.id = loadingId;
+    loadingDiv.innerHTML = `
+        <div class="message-bubble" style="background: var(--neo-cream); border: var(--border-thick) solid var(--border-color); padding: 16px; box-shadow: 4px 4px 0 0 var(--border-color);">
+             <div style="display: flex; gap: 4px; align-items: center;">
                 <span class="dot" style="width: 8px; height: 8px; background: var(--neo-black); border-radius: 50%; animation: bounce 0.6s infinite alternate;"></span>
                 <span class="dot" style="width: 8px; height: 8px; background: var(--neo-black); border-radius: 50%; animation: bounce 0.6s infinite alternate 0.2s;"></span>
                 <span class="dot" style="width: 8px; height: 8px; background: var(--neo-black); border-radius: 50%; animation: bounce 0.6s infinite alternate 0.4s;"></span>
             </div>
         </div>
     `;
-    history.appendChild(loadingBubble);
-    history.scrollTop = history.scrollHeight;
+    if (chatHistory) {
+        chatHistory.appendChild(loadingDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
 
     // Add bounce animation style if not exists
     if (!document.getElementById('bounceStyle')) {
@@ -1051,6 +1082,7 @@ async function sendChatMessage() {
     }
 
     try {
+        console.log("🚀 Sending request to API...");
         const payload = {
             message: message,
             image: imageBase64,
@@ -1068,6 +1100,7 @@ async function sendChatMessage() {
         });
 
         const data = await response.json();
+        console.log("✅ API Response:", data);
 
         // Remove loading
         const loadingEl = document.getElementById(loadingId);
@@ -1076,9 +1109,11 @@ async function sendChatMessage() {
         if (data.success) {
             appendMessage(data.text, 'ai');
         } else {
+            console.error("❌ API Error:", data.error);
             appendMessage("⚠️ Error: " + data.error, 'ai');
         }
     } catch (e) {
+        console.error("❌ Network Exception:", e);
         document.getElementById(loadingId)?.remove();
         appendMessage("⚠️ Connection Error", 'ai');
     }

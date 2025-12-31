@@ -242,22 +242,34 @@ class GeminiClient:
             # So we'll make multiple requests if needed to reach the desired quantity
             all_generated_images = []
             attempts = 0
-            max_attempts = quantity * 6  # Increased attempts significantly to handle high refusal rates
-            max_duration = 500 # 500 seconds hard limit (since Gunicorn is 600s)
+            max_attempts = quantity + 2  # Reduced from quantity * 6 to avoid long waits
+            max_duration = 60 # 60 seconds soft limit per request
             
+            # Initialize Client ONCE
+            temp_client = None
+            try:
+                temp_client = RealGeminiClient(
+                    current_cookies.get('__Secure-1PSID'), 
+                    current_cookies.get('__Secure-1PSIDTS')
+                )
+                # Use asyncio.run for the init to ensure it completes
+                try:
+                    asyncio.run(temp_client.init(timeout=30, auto_close=False))
+                except RuntimeError:
+                     loop = asyncio.new_event_loop()
+                     asyncio.set_event_loop(loop)
+                     loop.run_until_complete(temp_client.init(timeout=30, auto_close=False))
+                     loop.close()
+            except Exception as e:
+                print(f"❌ Failed to init temp client: {e}")
+                return {'success': False, 'error': f'Failed to initialize: {str(e)}'}
+
             while len(all_generated_images) < quantity and attempts < max_attempts and (time.time() - start_time) < max_duration:
                 attempts += 1
                 print(f"📸 Attempt {attempts}: Requesting images (have {len(all_generated_images)}/{quantity})")
                 
-                # Run async generation - create new loop each time to avoid conflicts
+                # Run async generation using the SAME client
                 async def do_generation():
-                    # Create TEMP client with specific cookies for this request
-                    temp_client = RealGeminiClient(
-                        current_cookies.get('__Secure-1PSID'), 
-                        current_cookies.get('__Secure-1PSIDTS')
-                    )
-                    await temp_client.init(timeout=30, auto_close=False)
-                    
                     try:
                         # Generate content with files if present
                         response = await temp_client.generate_content(generation_prompt, files=generation_files)
@@ -270,7 +282,7 @@ class GeminiClient:
                 try:
                     response = asyncio.run(do_generation())
                 except RuntimeError as e:
-                    if "Event loop is closed" in str(e):
+                    if "Event loop is closed" in str(e) or "event loop is already running" in str(e):
                         # Fallback: create new event loop
                         loop = asyncio.new_event_loop()
                         asyncio.set_event_loop(loop)
@@ -279,7 +291,14 @@ class GeminiClient:
                         finally:
                             loop.close()
                     else:
-                        raise
+                        # Try one more time with a fresh client if the old one died
+                        print("⚠️ Client loop error, re-initializing...")
+                        temp_client = RealGeminiClient(
+                            current_cookies.get('__Secure-1PSID'), 
+                            current_cookies.get('__Secure-1PSIDTS')
+                        )
+                        asyncio.run(temp_client.init(timeout=30, auto_close=False))
+                        response = asyncio.run(do_generation())
                 
                 # Extract generated images from this response
                 if hasattr(response, 'images') and response.images:

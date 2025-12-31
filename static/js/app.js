@@ -900,6 +900,8 @@ window.downloadImage = downloadImage;
 // ============================================
 
 function initializeChatSystem() {
+    console.log("🚀 Initializing Chat System...");
+
     // 1. Tab Switching
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -915,46 +917,90 @@ function initializeChatSystem() {
                 c.classList.remove('active');
             });
             const target = document.getElementById(targetId);
-            target.style.display = 'block';
+            if (target) {
+                target.style.display = 'block';
+            }
         });
     });
 
     // 2. Chat Messaging
-    const chatInput = elements.chatInput;
-    const sendBtn = elements.sendChatBtn;
+    // Fetch elements FRESH to avoid any initialization race conditions
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendChatBtn');
 
     if (chatInput && sendBtn) {
-        sendBtn.addEventListener('click', () => sendChatMessage());
+        console.log("✅ Chat input and send button found");
+
+        // Remove old listeners to prevent duplicates (not strictly necessary with fresh page load, but good practice)
+        const newSendBtn = sendBtn.cloneNode(true);
+        sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
+
+        newSendBtn.addEventListener('click', (e) => {
+            console.log("📩 Send button clicked");
+            e.preventDefault();
+            sendChatMessage();
+        });
+
+        // Re-assign for subsequent use
+        elements.sendChatBtn = newSendBtn;
+
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
+                console.log("⌨️ Enter key pressed in chat");
                 e.preventDefault();
                 sendChatMessage();
             }
         });
+    } else {
+        console.error("❌ Chat input or send button NOT found!", { chatInput, sendBtn });
     }
 
     // 3. Chat Image Upload
-    if (elements.chatUploadBtn && elements.chatFileInput) {
-        elements.chatUploadBtn.addEventListener('click', () => {
-            elements.chatFileInput.click();
+    const chatUploadBtn = document.getElementById('chatUploadBtn');
+    const chatFileInput = document.getElementById('chatFileInput');
+    const chatImagePreview = document.getElementById('chatImagePreview');
+    const chatPreviewImg = document.getElementById('chatPreviewImg');
+    const removeChatImage = document.getElementById('removeChatImage');
+
+    if (chatUploadBtn && chatFileInput) {
+        console.log("✅ Chat upload controls found");
+
+        // Clone to clear listeners
+        const newUploadBtn = chatUploadBtn.cloneNode(true);
+        chatUploadBtn.parentNode.replaceChild(newUploadBtn, chatUploadBtn);
+
+        newUploadBtn.addEventListener('click', (e) => {
+            console.log("📎 Upload button clicked");
+            e.preventDefault();
+            chatFileInput.click();
         });
 
-        elements.chatFileInput.addEventListener('change', (e) => {
+        // Re-assign
+        elements.chatUploadBtn = newUploadBtn;
+
+        chatFileInput.addEventListener('change', (e) => {
+            console.log("📂 File selected");
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    elements.chatPreviewImg.src = e.target.result;
-                    elements.chatImagePreview.style.display = 'block';
+                    if (chatPreviewImg && chatImagePreview) {
+                        chatPreviewImg.src = e.target.result;
+                        chatImagePreview.style.display = 'block';
+                    }
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        elements.removeChatImage.addEventListener('click', () => {
-            elements.chatFileInput.value = '';
-            elements.chatImagePreview.style.display = 'none';
-        });
+        if (removeChatImage) {
+            removeChatImage.addEventListener('click', () => {
+                chatFileInput.value = '';
+                if (chatImagePreview) chatImagePreview.style.display = 'none';
+            });
+        }
+    } else {
+        console.error("❌ Chat upload buttons NOT found!", { chatUploadBtn, chatFileInput });
     }
 }
 

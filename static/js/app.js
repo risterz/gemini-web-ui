@@ -177,6 +177,7 @@ function initializeEventListeners() {
     // Settings Modal
     if (elements.settingsBtn) {
         elements.settingsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
             elements.settingsModal.style.display = 'flex';
         });
@@ -475,7 +476,16 @@ async function generateImages() {
             body: JSON.stringify(requestData)
         });
 
-        const data = await response.json();
+        let data;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            // If response is not JSON (e.g. 500/504 HTML error page)
+            const text = await response.text();
+            console.error("Non-JSON response received:", text.substring(0, 200));
+            throw new Error(`Server Error (${response.status}): The server timed out or crashed. Please try reducing quantity.`);
+        }
 
         if (data.success) {
             // Force progress to 100%
@@ -832,17 +842,41 @@ async function saveSettings() {
         return;
     }
 
-    // Save to LocalStorage (User's browser)
-    localStorage.setItem('gemini_psid', psid);
-    localStorage.setItem('gemini_psidts', psidts);
+    // Update UI state
+    const originalText = elements.saveSettingsBtn.innerHTML;
+    elements.saveSettingsBtn.innerHTML = '<span class="btn-text">⏳ Saving...</span>';
+    elements.saveSettingsBtn.disabled = true;
 
-    // Also update UI to show saved state
-    elements.saveSettingsBtn.innerHTML = '<span class="btn-text">✅ Saved to Browser!</span>';
-    setTimeout(() => {
-        elements.saveSettingsBtn.innerHTML = '<span class="btn-text">💾 Save Settings</span>';
-        elements.settingsModal.style.display = 'none';
-        showError("Cookies saved! You can now use the app.", "success");
-    }, 1000);
+    try {
+        // Call Backend API to update cookies
+        const response = await fetch('/api/update_cookies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ psid, psidts })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Save to LocalStorage for persistence
+            localStorage.setItem('gemini_psid', psid);
+            localStorage.setItem('gemini_psidts', psidts);
+
+            elements.saveSettingsBtn.innerHTML = '<span class="btn-text">✅ Saved! Restaring...</span>';
+
+            // Reload page to apply changes cleanly
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error(data.error || "Failed to save settings");
+        }
+    } catch (e) {
+        console.error(e);
+        elements.saveSettingsBtn.innerHTML = originalText;
+        elements.saveSettingsBtn.disabled = false;
+        showError("Failed to save: " + e.message);
+    }
 }
 
 // Load saved cookies on startup

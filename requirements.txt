@@ -6,3 +6,5 @@ python-dotenv
 werkzeug
 gemini_webapi
 gunicorn
+google-genai
+httpx

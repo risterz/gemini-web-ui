@@ -242,9 +242,10 @@ class GeminiClient:
             # So we'll make multiple requests if needed to reach the desired quantity
             all_generated_images = []
             attempts = 0
-            max_attempts = quantity * 3  # Increased attempts to ensure we get enough single images
+            max_attempts = quantity * 6  # Increased attempts significantly to handle high refusal rates
+            max_duration = 500 # 500 seconds hard limit (since Gunicorn is 600s)
             
-            while len(all_generated_images) < quantity and attempts < max_attempts:
+            while len(all_generated_images) < quantity and attempts < max_attempts and (time.time() - start_time) < max_duration:
                 attempts += 1
                 print(f"📸 Attempt {attempts}: Requesting images (have {len(all_generated_images)}/{quantity})")
                 
@@ -293,7 +294,7 @@ class GeminiClient:
                         print(f"📐 Enforcing {aspect_ratio} aspect ratio for image...")
                         
                         # Enforce aspect ratio by cropping/resizing
-                        processed_image = enforce_aspect_ratio(original_url, aspect_ratio)
+                        processed_image = enforce_aspect_ratio(original_url, aspect_ratio, cookies=current_cookies)
                         
                         if processed_image:
                             # Use the processed base64 image
@@ -302,7 +303,14 @@ class GeminiClient:
                         else:
                             # Fallback to proxied original if processing fails
                             from urllib.parse import quote
-                            image_url = f"/api/proxy-image?url={quote(original_url)}"
+                            
+                            proxy_url = f"/api/proxy-image?url={quote(original_url)}"
+                            if current_cookies and current_cookies.get('__Secure-1PSID'):
+                                psid = quote(current_cookies.get('__Secure-1PSID', ''))
+                                psidts = quote(current_cookies.get('__Secure-1PSIDTS', ''))
+                                proxy_url += f"&psid={psid}&psidts={psidts}"
+                                
+                            image_url = proxy_url
                             print(f"⚠️ Using original image (processing failed)")
                         
                         # Avoid duplicates
@@ -491,55 +499,77 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def enforce_aspect_ratio(image_url, target_aspect_ratio):
+def enforce_aspect_ratio(image_url, target_aspect_ratio='square', cookies=None):
     """
-    Download and crop/resize image to enforce exact aspect ratio
-    NOW WITH MAX RESOLUTION PRESERVATION
+    Downloads image, strictly enforces aspect ratio by smart cropping, 
+    and saves to static folder.
     
     Args:
         image_url: URL of the image to process
         target_aspect_ratio: 'square', 'landscape', or 'portrait'
+        cookies: Optional dictionary of cookies to use for the request
     
     Returns:
         Base64 encoded image with correct aspect ratio
     """
     try:
-        # Download the image with proper headers and cookies
+        # Robust Headers mimicking Chrome 120+
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Referer': 'https://gemini.google.com/',
-            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+            'Origin': 'https://gemini.google.com',
+            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'image',
+            'Sec-Fetch-Mode': 'no-cors',
+            'Sec-Fetch-Site': 'cross-site',
         }
         
-        # Add cookies for Google images
-        cookies = {}
+        # Add cookies - prioritize passed cookies
+        request_cookies = {}
         if 'googleusercontent.com' in image_url or 'google.com' in image_url:
-            cookies = GEMINI_COOKIES
+            request_cookies = cookies if cookies else GEMINI_COOKIES
         
-        response = requests.get(image_url, headers=headers, cookies=cookies, timeout=15)
+        # Attempt 1: Requests with specific headers
+        response = requests.get(image_url, headers=headers, cookies=request_cookies, timeout=10)
         
+        # Attempt 2: Curl Fallback if 403 (Often bypasses TLS fingerprinting blocks)
         if response.status_code == 403:
-            print(f"⚠️ 403 with cookies. Retrying download without cookies/headers...")
-            # Retry without cookies AND without restrictive headers (like Referer)
-            clean_headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Sec-Fetch-User': '?1'
-            }
-            response = requests.get(image_url, headers=clean_headers, timeout=15)
-            
-            # 3rd fallback: If still failing and it's googleusercontent, try http instead of https (sometimes helps with varying certs/blocks?)
-            # Or just generic retry
-            if response.status_code == 403:
-                print(f"⚠️ Still 403. Trying generic fallback...")
-                response = requests.get(image_url, verify=False, timeout=15) # Last ditch effort
+            print(f"⚠️ 403 with requests. Retrying with curl fallback...")
+            try:
+                import subprocess
+                # Build cookie string for curl
+                cookie_str = ""
+                if request_cookies:
+                    cookie_str = "; ".join([f"{k}={v}" for k, v in request_cookies.items()])
+                
+                cmd = [
+                    'curl', '-L', '-s', 
+                    '-H', f'User-Agent: {headers["User-Agent"]}',
+                    '-H', f'Referer: {headers["Referer"]}',
+                    image_url
+                ]
+                if cookie_str:
+                    cmd.extend(['-b', cookie_str])
+                    
+                # Run curl
+                result = subprocess.run(cmd, capture_output=True, timeout=15)
+                
+                if result.returncode == 0 and result.stdout:
+                    # Create a mock response object
+                    class MockResponse:
+                        def __init__(self, content):
+                            self.content = content
+                            self.status_code = 200
+                    response = MockResponse(result.stdout)
+                    print("✅ Curl download successful")
+                else:
+                    print(f"❌ Curl failed: {result.stderr.decode('utf-8')[:100]}")
+            except Exception as e:
+                print(f"❌ Curl exception: {e}")
 
         if response.status_code != 200:
             print(f"❌ Failed to download image: {response.status_code}")
@@ -617,7 +647,13 @@ def enforce_aspect_ratio(image_url, target_aspect_ratio):
         # quality=98: Near lossless
         cropped_img = cropped_img.convert("RGB")
         cropped_img.save(filepath, format="JPEG", quality=98, subsampling=0)
-        print(f"💾 Saved HQ generated image to: {filename}")
+        
+        # Verify file size
+        if os.path.getsize(filepath) == 0:
+            os.remove(filepath)
+            raise Exception("Saved file is 0 bytes")
+            
+        print(f"💾 Saved HQ generated image to: {filename} ({os.path.getsize(filepath)} bytes)")
         
         # 4. Return URL path
         return f"/static/generated/{filename}"
@@ -921,32 +957,61 @@ def proxy_image():
         }
         
         # Add cookies if the URL is from Google
-        cookies = {}
+        # Prioritize cookies passed in query params (frontend)
+        psid = request.args.get('psid')
+        psidts = request.args.get('psidts')
+        
+        request_cookies = {}
         if 'googleusercontent.com' in image_url or 'google.com' in image_url:
-            cookies = GEMINI_COOKIES
+            if psid and psidts:
+                request_cookies = {
+                    '__Secure-1PSID': psid,
+                    '__Secure-1PSIDTS': psidts
+                }
+            else:
+                request_cookies = GEMINI_COOKIES
         
-        response = requests.get(image_url, headers=headers, cookies=cookies, timeout=15)
+        response = requests.get(image_url, headers=headers, cookies=request_cookies, timeout=15)
         
-        # Retry logic: If 403 Forbidden, try WITHOUT cookies
+        # Retry logic: If 403 Forbidden, try with curl (Fingerprint bypass)
         if response.status_code == 403:
-             print(f"Proxy: 403 with cookies. Retrying {image_url[:30]}... without cookies/headers")
-             clean_headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Sec-Fetch-User': '?1'
-             }
-             response = requests.get(image_url, headers=clean_headers, timeout=15)
-             
-             if response.status_code == 403:
-                 # Last ditch
-                 response = requests.get(image_url, verify=False, timeout=15)
+             print(f"Proxy: 403 with requests. Retrying with curl...")
+             try:
+                import subprocess
+                cookie_str = ""
+                if request_cookies:
+                    cookie_str = "; ".join([f"{k}={v}" for k, v in request_cookies.items()])
+                
+                cmd = [
+                    'curl', '-L', '-s', 
+                    '-H', f'User-Agent: {headers["User-Agent"]}',
+                    '-H', f'Referer: {headers["Referer"]}',
+                    image_url
+                ]
+                if cookie_str:
+                    cmd.extend(['-b', cookie_str])
+                    
+                result = subprocess.run(cmd, capture_output=True, timeout=15)
+                
+                if result.returncode == 0 and result.stdout:
+                    # Mock response
+                    class MockResponse:
+                        def __init__(self, content):
+                            self.content = content
+                            self.status_code = 200
+                            self.headers = {'Content-Type': 'image/jpeg'} # Guess type if curl
+                    response = MockResponse(result.stdout)
+                    print("✅ Proxy curl download successful")
+             except Exception as e:
+                print(f"❌ Proxy curl failed: {e}")
+        
+        # Fallback to verify=False if still failing (and not curl success)
+        if response.status_code != 200:
+             # Last ditch: try requests without verify (sometimes works for weird certs)
+             try:
+                response = requests.get(image_url, verify=False, timeout=15)
+             except:
+                pass
         
         if response.status_code != 200:
             app.logger.error(f"Failed to fetch image: {response.status_code}")

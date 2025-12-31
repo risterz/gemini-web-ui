@@ -43,6 +43,22 @@
     /* Animation */
     --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
     --snap: cubic-bezier(0.25, 1, 0.5, 1);
+
+    /* Semantic Aliases (Fixing missing vars) */
+    --bg-main: var(--neo-cream);
+    --bg-card: var(--neo-white);
+    --text-main: var(--neo-black);
+    --text-muted: #6b7280;
+}
+
+/* Control Panel (Settings / Modal) */
+.control-panel {
+    background: var(--bg-card);
+    border: var(--border-thick) solid var(--border-color);
+    box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--border-color);
+    padding: var(--space-xl);
+    border-radius: 0;
+    /* Neobrutalist override */
 }
 
 /* ============================================
@@ -555,9 +571,11 @@ textarea.prompt-input:focus {
 }
 
 .aspect-btn.active {
-    background: var(--neo-purple);
-    color: var(--neo-white);
+    background: #A855F7;
+    /* Purple active state */
+    color: white;
     transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 0 var(--border-color);
     animation: aspectPop 0.3s var(--bounce);
 }
 
@@ -575,25 +593,29 @@ textarea.prompt-input:focus {
     }
 }
 
+/* RESTORED ASPECT RATIO SHAPES */
 .aspect-icon {
-    border: 4px solid currentColor;
-    border-radius: 0;
-    background: transparent;
+    border: 3px solid var(--neo-black);
+    background: white;
+    box-shadow: 2px 2px 0 0 var(--border-color);
 }
 
 .square-icon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
+    background: var(--neo-white);
 }
 
-.landscape-icon {
-    width: 36px;
-    height: 22px;
+.wide-icon {
+    width: 32px;
+    height: 18px;
+    background: var(--neo-white);
 }
 
 .portrait-icon {
-    width: 22px;
-    height: 36px;
+    width: 18px;
+    height: 32px;
+    background: var(--neo-white);
 }
 
 /* ============================================
@@ -607,7 +629,8 @@ textarea.prompt-input:focus {
 
 .qty-btn {
     flex: 1;
-    background: var(--neo-cream);
+    /* Default State: Cream/White */
+    background: var(--neo-white);
     border: var(--border-thick) solid var(--border-color);
     border-radius: 0;
     padding: 16px;
@@ -634,14 +657,16 @@ textarea.prompt-input:focus {
 }
 
 @keyframes qtyPop {
-
-    0%,
-    100% {
-        transform: scale(1);
+    0% {
+        transform: scale(0.95);
     }
 
     50% {
-        transform: scale(1.05);
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
     }
 }
 
@@ -650,6 +675,7 @@ textarea.prompt-input:focus {
    ============================================ */
 .generate-btn {
     width: 100%;
+    /* Revert to Gradient as "Original" style */
     background: linear-gradient(135deg, var(--neo-pink) 0%, var(--neo-purple) 100%);
     border: var(--border-thick) solid var(--border-color);
     border-radius: 0;

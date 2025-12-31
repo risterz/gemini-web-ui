@@ -15,7 +15,7 @@
         rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="/static/css/styles.css?v=2">
+    <link rel="stylesheet" href="/static/css/styles.css?v=3">
 
     <!-- Favicon (SVG) -->
     <link rel="icon"
@@ -48,7 +48,7 @@
                         </div>
 
                         <!-- Right Side Group (Unified) -->
-                        <div class="header-right" style="gap: 12px;">
+                        <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
 
                             <!-- Status & User Pill -->
                             <div class="glass-pill"
@@ -63,7 +63,7 @@
                             </div>
 
                             <!-- Settings Button (Separate, High Contrast) -->
-                            <a href="/settings" class="nav-btn"
+                            <a href="/settings" id="settingsBtn" class="nav-btn"
                                 style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: transparent; color: #9ca3af; text-decoration: none; border-radius: 100px; transition: all 0.2s;">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -123,14 +123,117 @@
                             placeholder="A futuristic city with neon lights, cyberpunk style, highly detailed, 8k resolution..."
                             maxlength="500"></textarea>
 
-                        <div class="suggestion-chips">
-                            <button class="chip" data-style="natural, realistic, 8k photography, raw photo">🌿
-                                Natural</button>
-                            <button class="chip" data-style="photorealistic">📸 Photorealistic</button>
-                            <button class="chip" data-style="cinematic lighting">🎬 Cinematic</button>
-                            <button class="chip" data-style="anime style">🎨 Anime</button>
-                            <button class="chip" data-style="3d render">🧊 3D Render</button>
-                            <button class="chip" data-style="cyberpunk">🌃 Cyberpunk</button>
+                    </div>
+
+                    <!-- Style Presets Section (New) -->
+                    <div class="styles-container" style="margin-bottom: var(--space-xl);">
+                        <div class="label">
+                            <span class="label-text">Style Presets (Optional)</span>
+                        </div>
+
+                        <div class="style-groups" style="display: grid; gap: 20px;">
+
+                            <!-- Photography -->
+                            <div class="style-group">
+                                <div
+                                    style="font-size: 0.8rem; font-weight: 800; color: var(--neo-black); margin-bottom: 8px; text-transform: uppercase; opacity: 0.6; padding-left: 2px;">
+                                    📸 Photography</div>
+                                <div class="suggestion-chips" style="margin-top: 0;">
+                                    <button class="chip"
+                                        data-style="photorealistic, 8k, highly detailed">Photorealistic</button>
+                                    <button class="chip"
+                                        data-style="natural lighting, candid, raw photo">Natural</button>
+                                    <button class="chip"
+                                        data-style="cinematic lighting, movie scene, dramatic">Cinematic</button>
+                                    <button class="chip" data-style="analog film, grain, vintage camera">Analog
+                                        Film</button>
+                                    <button class="chip" data-style="street photography, urban, candid">Street</button>
+                                    <button class="chip"
+                                        data-style="studio lighting, professional headshot">Studio</button>
+                                    <button class="chip"
+                                        data-style="macro photography, close up, detailed">Macro</button>
+                                    <button class="chip"
+                                        data-style="black and white, monochrome, high contrast">B&W</button>
+                                </div>
+                            </div>
+
+                            <!-- Art Styles -->
+                            <div class="style-group">
+                                <div
+                                    style="font-size: 0.8rem; font-weight: 800; color: var(--neo-black); margin-bottom: 8px; text-transform: uppercase; opacity: 0.6; padding-left: 2px;">
+                                    🎨 Art Styles</div>
+                                <div class="suggestion-chips" style="margin-top: 0;">
+                                    <button class="chip" data-style="oil painting, textured, canvas">Oil Paint</button>
+                                    <button class="chip"
+                                        data-style="watercolor, soft, bleeding colors">Watercolor</button>
+                                    <button class="chip" data-style="sketch, pencil, graphite, rough">Sketch</button>
+                                    <button class="chip"
+                                        data-style="ink illustration, hatching, crosshatching">Ink</button>
+                                    <button class="chip" data-style="pop art, halftone, vibrant">Pop Art</button>
+                                    <button class="chip"
+                                        data-style="impressionist, brush strokes, light">Impressionist</button>
+                                    <button class="chip"
+                                        data-style="ukiyo-e, woodblock print, japanese">Ukiyo-e</button>
+                                    <button class="chip" data-style="abstract, shapes, colors, modern">Abstract</button>
+                                </div>
+                            </div>
+
+                            <!-- Digital & 3D -->
+                            <div class="style-group">
+                                <div
+                                    style="font-size: 0.8rem; font-weight: 800; color: var(--neo-black); margin-bottom: 8px; text-transform: uppercase; opacity: 0.6; padding-left: 2px;">
+                                    👾 Digital & 3D</div>
+                                <div class="suggestion-chips" style="margin-top: 0;">
+                                    <button class="chip" data-style="3d render, octane render, unreal engine 5">3D
+                                        Render</button>
+                                    <button class="chip"
+                                        data-style="cyberpunk, neon, futuristic, tech">Cyberpunk</button>
+                                    <button class="chip" data-style="anime, manga style, cel shaded">Anime</button>
+                                    <button class="chip" data-style="pixel art, 8-bit, retro game">Pixel Art</button>
+                                    <button class="chip" data-style="low poly, geometric, minimal 3d">Low Poly</button>
+                                    <button class="chip" data-style="vaporwave, synthwave, retro 80s">Vaporwave</button>
+                                    <button class="chip" data-style="vector art, flat, clean lines">Vector</button>
+                                    <button class="chip" data-style="isometric, 3d view, mini world">Isometric</button>
+                                </div>
+                            </div>
+
+                            <!-- Mood & Atmosphere -->
+                            <div class="style-group">
+                                <div
+                                    style="font-size: 0.8rem; font-weight: 800; color: var(--neo-black); margin-bottom: 8px; text-transform: uppercase; opacity: 0.6; padding-left: 2px;">
+                                    👻 Mood & Vibes</div>
+                                <div class="suggestion-chips" style="margin-top: 0;">
+                                    <button class="chip"
+                                        data-style="horror, dark, eerie, spooky, scary, nightmare">Horror</button>
+                                    <button class="chip" data-style="dark noir, high contrast, mysterious">Noir</button>
+                                    <button class="chip"
+                                        data-style="fantasy, magical, ethereal, glowing">Fantasy</button>
+                                    <button class="chip" data-style="surreal, salvador dali, dreamlike">Surreal</button>
+                                    <button class="chip" data-style="vintage, retro, 1950s, nostalgia">Vintage</button>
+                                    <button class="chip" data-style="gothic, dark, ornate, brooding">Gothic</button>
+                                    <button class="chip" data-style="psychedelic, trippy, colorful">Psychedelic</button>
+                                    <button class="chip"
+                                        data-style="minimalist, clean, simple, negative space">Minimalist</button>
+                                </div>
+                            </div>
+
+                            <!-- Materials & Craft -->
+                            <div class="style-group">
+                                <div
+                                    style="font-size: 0.8rem; font-weight: 800; color: var(--neo-black); margin-bottom: 8px; text-transform: uppercase; opacity: 0.6; padding-left: 2px;">
+                                    🧶 Materials</div>
+                                <div class="suggestion-chips" style="margin-top: 0;">
+                                    <button class="chip"
+                                        data-style="origami, folded paper, paper craft">Origami</button>
+                                    <button class="chip" data-style="claymation, plasticine, stop motion">Clay</button>
+                                    <button class="chip" data-style="mosaic, tile, stained glass">Mosaic</button>
+                                    <button class="chip"
+                                        data-style="blueprint, technical drawing, schematic">Blueprint</button>
+                                    <button class="chip" data-style="knitted, wool, fabric texture">Knitted</button>
+                                    <button class="chip" data-style="marble, stone, statue, scuplture">Marble</button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -143,15 +246,15 @@
                             <div class="aspect-ratio-selector">
                                 <button class="aspect-btn active" data-ratio="square">
                                     <div class="aspect-icon square-icon"></div>
-                                    <span class="aspect-label">Square</span>
+                                    <span class="aspect-label">1:1</span>
                                 </button>
                                 <button class="aspect-btn" data-ratio="landscape">
                                     <div class="aspect-icon landscape-icon"></div>
-                                    <span class="aspect-label">Landscape</span>
+                                    <span class="aspect-label">16:9</span>
                                 </button>
                                 <button class="aspect-btn" data-ratio="portrait">
                                     <div class="aspect-icon portrait-icon"></div>
-                                    <span class="aspect-label">Portrait</span>
+                                    <span class="aspect-label">9:16</span>
                                 </button>
                             </div>
                         </div>
@@ -159,9 +262,7 @@
                         <!-- Quantity & Ref Image -->
                         <div class="panel-section">
                             <div class="label">
-                                <span class="label-text">Quantity: <span id="quantityValue"
-                                        style="color:white; font-weight:bold;">4</span></span>
-                                <span class="label-hint" id="timeEstimate">~8s</span>
+                                <span class="label-text">Quantity</span>
                             </div>
                             <div class="quantity-control" style="margin-bottom: 24px;">
                                 <div class="quantity-selector">
@@ -170,6 +271,10 @@
                                     <button class="qty-btn" data-qty="3">3</button>
                                     <button class="qty-btn active" data-qty="4">4</button>
                                 </div>
+                            </div>
+                            <div class="time-estimate" style="text-align: center; margin-bottom: 16px;">
+                                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">⏱️ Est:
+                                    8-12s</span>
                             </div>
 
                             <!-- Mini Upload (Compact) -->
@@ -229,7 +334,22 @@
             <!-- Results Gallery -->
             <div class="results-section" id="resultsSection" style="display: none;">
                 <div class="results-header">
-                    <h2 class="results-title">Your Creations</h2>
+                    <div>
+                        <h2 class="results-title">Your Creations</h2>
+                        <!-- Warning Banner -->
+                        <div
+                            style="background: rgba(255, 82, 82, 0.1); border: 1px solid rgba(255, 82, 82, 0.3); color: #ff8080; padding: 10px 16px; border-radius: 8px; margin-top: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            <span><strong>Warning:</strong> Images are not saved permanently. Download your favorites
+                                now before refreshing!</span>
+                        </div>
+                    </div>
+
                     <button class="download-all-btn" id="downloadAllBtn" class="enhance-btn"
                         style="background: #fff; border: 3px solid #000; color: #000; padding: 10px 20px; font-weight: 700; cursor: pointer; box-shadow: 4px 4px 0 0 #000; transition: all 0.2s;">
                         Download All
@@ -387,7 +507,7 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="/static/js/app.js?v=2"></script>
+    <script src="/static/js/app.js?v=3"></script>
 </body>
 
 </html>

@@ -246,107 +246,94 @@ class GeminiClient:
             max_attempts = quantity * 3 + 2 
             max_duration = 180 # 3 minutes soft limit to allow for 4 images
             
-            # Initialize Client ONCE
-            temp_client = None
-            try:
-                temp_client = RealGeminiClient(
+            # Unified Async Handler to prevent "Event Loop Closed" errors
+            async def run_gemini_session():
+                client = RealGeminiClient(
                     current_cookies.get('__Secure-1PSID'), 
                     current_cookies.get('__Secure-1PSIDTS')
                 )
-                # Use asyncio.run for the init to ensure it completes
-                try:
-                    asyncio.run(temp_client.init(timeout=30, auto_close=False))
-                except RuntimeError:
-                     loop = asyncio.new_event_loop()
-                     asyncio.set_event_loop(loop)
-                     loop.run_until_complete(temp_client.init(timeout=30, auto_close=False))
-                     loop.close()
-            except Exception as e:
-                print(f"❌ Failed to init temp client: {e}")
-                return {'success': False, 'error': f'Failed to initialize: {str(e)}'}
-
-            while len(all_generated_images) < quantity and attempts < max_attempts and (time.time() - start_time) < max_duration:
-                attempts += 1
-                print(f"📸 Attempt {attempts}: Requesting images (have {len(all_generated_images)}/{quantity})")
                 
-                # Run async generation using the SAME client
-                async def do_generation():
+                # Initialize within the same loop
+                await client.init(timeout=30, auto_close=False)
+                
+                generated_results = []
+                current_attempts = 0
+                max_retries = quantity * 3 + 2
+                
+                while len(generated_results) < quantity and current_attempts < max_retries:
+                    current_attempts += 1
+                    print(f"📸 Attempt {current_attempts}: Requesting images (have {len(generated_results)}/{quantity})")
+                    
                     try:
-                        # Generate content with files if present
-                        response = await temp_client.generate_content(generation_prompt, files=generation_files)
-                        return response
-                    except Exception as e:
-                        print(f"⚠️ Generation error: {e}")
-                        raise e
-                
-                # Use asyncio.run which handles loop creation and cleanup properly
-                try:
-                    response = asyncio.run(do_generation())
-                except RuntimeError as e:
-                    if "Event loop is closed" in str(e) or "event loop is already running" in str(e):
-                        # Fallback: create new event loop
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                        try:
-                            response = loop.run_until_complete(do_generation())
-                        finally:
-                            loop.close()
-                    else:
-                        # Try one more time with a fresh client if the old one died
-                        print("⚠️ Client loop error, re-initializing...")
-                        temp_client = RealGeminiClient(
-                            current_cookies.get('__Secure-1PSID'), 
-                            current_cookies.get('__Secure-1PSIDTS')
-                        )
-                        asyncio.run(temp_client.init(timeout=30, auto_close=False))
-                        response = asyncio.run(do_generation())
-                
-                # Extract generated images from this response
-                if hasattr(response, 'images') and response.images:
-                    print(f"✅ Received {len(response.images)} images from Gemini")
-                    for image in response.images:
-                        if len(all_generated_images) >= quantity:
-                            break
+                        resp = await client.generate_content(generation_prompt, files=generation_files)
                         
-                        # Get image URL from Gemini
-                        original_url = image.url if hasattr(image, 'url') else str(image)
-                        
-                        print(f"📐 Enforcing {aspect_ratio} aspect ratio for image...")
-                        
-                        # Enforce aspect ratio by cropping/resizing
-                        processed_image = enforce_aspect_ratio(original_url, aspect_ratio, cookies=current_cookies)
-                        
-                        if processed_image:
-                            # Use the processed base64 image
-                            image_url = processed_image
-                            print(f"✅ Image processed to exact {aspect_ratio} dimensions")
+                        if hasattr(resp, 'images') and resp.images:
+                             print(f"✅ Received {len(resp.images)} images from Gemini")
+                             for img in resp.images:
+                                 if len(generated_results) >= quantity:
+                                     break
+                                 
+                                 # Standardize functionality
+                                 orig_url = img.url if hasattr(img, 'url') else str(img)
+                                 
+                                 generated_results.append({
+                                     'original_url': orig_url,
+                                     'title': getattr(img, 'title', 'Generated Image'),
+                                     'alt': getattr(img, 'alt', prompt[:100])
+                                 })
                         else:
-                            # Fallback to proxied original if processing fails
-                            from urllib.parse import quote
-                            
-                            proxy_url = f"/api/proxy-image?url={quote(original_url)}"
-                            if current_cookies and current_cookies.get('__Secure-1PSID'):
-                                psid = quote(current_cookies.get('__Secure-1PSID', ''))
-                                psidts = quote(current_cookies.get('__Secure-1PSIDTS', ''))
-                                proxy_url += f"&psid={psid}&psidts={psidts}"
-                                
-                            image_url = proxy_url
-                            print(f"⚠️ Using original image (processing failed)")
+                             print(f"⚠️ No images in response")
+                             await asyncio.sleep(1)
+                             
+                    except Exception as e:
+                        print(f"⚠️ Generation error in loop: {e}")
+                        await asyncio.sleep(1)
+                
+                return generated_results, current_attempts
+
+            # Run the unified async session
+            try:
+                # asyncio.run creates a new loop, runs the function, and closes it.
+                raw_images, total_attempts = asyncio.run(run_gemini_session())
+                attempts = total_attempts
+                
+                # Process images (Download & Resize) - Done SYNCHRONOUSLY after loop is closed
+                for img_data in raw_images:
+                    original_url = img_data['original_url']
+                    
+                    if any(img['original_url'] == original_url for img in all_generated_images):
+                        continue
                         
-                        # Avoid duplicates
-                        if not any(img['original_url'] == original_url for img in all_generated_images):
-                            all_generated_images.append({
-                                'url': image_url,  # Use processed or proxied URL
-                                'original_url': original_url,  # Keep original for reference
-                                'thumbnail': image_url,
-                                'index': len(all_generated_images) + 1,
-                                'title': getattr(image, 'title', f'Generated Image {len(all_generated_images) + 1}'),
-                                'alt': getattr(image, 'alt', prompt[:100])
-                            })
-                else:
-                    print(f"⚠️ No images in this response. Raw response: {response}")
-                    # If we got no images, wait a bit before retrying
-                    time.sleep(1)
+                    print(f"📐 Process image: {original_url[:50]}...")
+                    processed_path = enforce_aspect_ratio(original_url, aspect_ratio, cookies=current_cookies)
+                    
+                    if processed_path:
+                         final_url = processed_path
+                         print(f"✅ Processed successfully")
+                    else:
+                         # Fallback Proxy
+                         from urllib.parse import quote
+                         proxy_url = f"/api/proxy-image?url={quote(original_url)}"
+                         if current_cookies.get('__Secure-1PSID'):
+                             psid = quote(current_cookies.get('__Secure-1PSID', ''))
+                             psidts = quote(current_cookies.get('__Secure-1PSIDTS', ''))
+                             proxy_url += f"&psid={psid}&psidts={psidts}"
+                         final_url = proxy_url
+                         print(f"⚠️ verification failed, using proxy")
+                    
+                    all_generated_images.append({
+                        'url': final_url,
+                        'original_url': original_url,
+                        'thumbnail': final_url,
+                        'index': len(all_generated_images) + 1,
+                        'title': img_data['title'],
+                        'alt': img_data['alt']
+                    })
+                    
+            except Exception as e:
+                print(f"❌ Async/Loop Error: {e}")
+                # Fallback handled by outer except
+                raise e
             
             generation_time = time.time() - start_time
             
@@ -578,7 +565,7 @@ def enforce_aspect_ratio(image_url, target_aspect_ratio='square', cookies=None):
                 # Run curl
                 result = subprocess.run(cmd, capture_output=True, timeout=15)
                 
-                if result.returncode == 0 and result.stdout:
+                if result.returncode == 0 and result.stdout and len(result.stdout) > 100:
                     # Create a mock response object
                     class MockResponse:
                         def __init__(self, content):
@@ -587,7 +574,9 @@ def enforce_aspect_ratio(image_url, target_aspect_ratio='square', cookies=None):
                     response = MockResponse(result.stdout)
                     print("✅ Curl download successful")
                 else:
-                    print(f"❌ Curl failed: {result.stderr.decode('utf-8')[:100]}")
+                    print(f"❌ Curl failed or returned empty/short content. Ret code: {result.returncode}, Size: {len(result.stdout) if result.stdout else 0}")
+                    pass
+
             except Exception as e:
                 print(f"❌ Curl exception: {e}")
 
@@ -595,8 +584,26 @@ def enforce_aspect_ratio(image_url, target_aspect_ratio='square', cookies=None):
             print(f"❌ Failed to download image: {response.status_code}")
             return None
         
+        # Verify it's actually an image (check magic bytes)
+        content = response.content
+        if len(content) < 100:
+            print(f"❌ Downloaded content too small: {len(content)} bytes")
+            return None
+            
+        # JPEG (FF D8 FF), PNG (89 50 4E 47), WebP (RIFF...WEBP)
+        if not (content.startswith(b'\xff\xd8') or 
+                content.startswith(b'\x89PNG') or 
+                (content.startswith(b'RIFF') and b'WEBP' in content[:16])):
+            print(f"❌ Downloaded content is not a valid image (likely HTML error page). First 50 bytes: {content[:50]}")
+            return None
+
         # Open image with PIL
-        img = Image.open(BytesIO(response.content))
+        try:
+            img = Image.open(BytesIO(content))
+        except Exception as e:
+             print(f"❌ PIL Open Error: {e}")
+             return None
+             
         original_width, original_height = img.size
         print(f"📏 Original dimensions: {original_width}x{original_height}")
         

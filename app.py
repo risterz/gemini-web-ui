@@ -24,6 +24,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# Log startup to help identify cold starts in logs
+print("🚀 Server starting up... (Cold Start Re-initialization)")
+
 # Configuration
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}

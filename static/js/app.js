@@ -428,7 +428,18 @@ function removeReferenceImage() {
 // Image Generation
 // ============================================
 
-async function generateImages() {
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        console.log("👀 Tab active - Pinging server to wake up...");
+        checkSystemHealth();
+    }
+});
+
+// ============================================
+// Image Generation
+// ============================================
+
+async function generateImages(retryCount = 0) {
     // Validate input
     const prompt = elements.promptInput.value.trim();
 
@@ -456,10 +467,14 @@ async function generateImages() {
     // Use Inline Progress
     elements.loadingOverlay.style.display = 'none'; // Ensure overlay is hidden
     elements.progressContainer.style.display = 'block';
-    elements.resultsSection.style.display = 'none';
 
-    // Animate progress text & percent
-    animateProgress();
+    // Only clear results if it's the first attempt, not a retry
+    if (retryCount === 0) {
+        elements.resultsSection.style.display = 'none';
+        animateProgress();
+    } else {
+        updateProgress(10, `Server warming up (Attempt ${retryCount + 1})...`);
+    }
 
     try {
         // Prepare request
@@ -513,6 +528,26 @@ async function generateImages() {
 
     } catch (error) {
         console.error('Generation error:', error);
+
+        // AUTO-RETRY LOGIC FOR COLD STARTS
+        // If this was the first attempt, and it failed, we try ONE more time.
+        if (retryCount === 0) {
+            console.log("⚠️ First attempt failed. Retrying in 3 seconds (Lazy Wake-up)...");
+
+            // Update UI to show we are retrying
+            updateProgress(5, "Server waking up... Retrying...");
+
+            // Release lock temporarily so we can call recursively (but we want to keep UI locked)
+            state.isGenerating = false;
+
+            // Wait 3 seconds
+            await new Promise(r => setTimeout(r, 3000));
+
+            // Recursively call with retryCount = 1
+            await generateImages(1);
+            return; // Exit this execution, let the recursive one handle cleanup
+        }
+
         const errorMsg = error.message || 'Failed to generate images. Please try again.';
         showError(errorMsg);
 
@@ -524,13 +559,16 @@ async function generateImages() {
         // Hide progress on error
         elements.progressContainer.style.display = 'none';
     } finally {
-        state.isGenerating = false;
-        elements.generateBtn.disabled = false;
-        elements.generateBtn.querySelector('.btn-text').textContent = 'Generate Masterpiece';
+        // Only cleanup if we are NOT retrying
+        if (retryCount > 0 || !state.isGenerating) {
+            state.isGenerating = false;
+            elements.generateBtn.disabled = false;
+            elements.generateBtn.querySelector('.btn-text').textContent = 'Generate Masterpiece';
 
-        // Hide progress (Results display handles this too, but for safety)
-        if (!state.generatedImages.length) {
-            elements.progressContainer.style.display = 'none';
+            // Hide progress (Results display handles this too, but for safety)
+            if (!state.generatedImages.length) {
+                elements.progressContainer.style.display = 'none';
+            }
         }
     }
 }

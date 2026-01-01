@@ -256,43 +256,53 @@ class GeminiClient:
                     current_cookies.get('__Secure-1PSIDTS')
                 )
                 
-                # Initialize within the same loop
-                await client.init(timeout=30, auto_close=False)
-                
-                generated_results = []
-                current_attempts = 0
-                max_retries = quantity * 3 + 2
-                
-                while len(generated_results) < quantity and current_attempts < max_retries:
-                    current_attempts += 1
-                    print(f"📸 Attempt {current_attempts}: Requesting images (have {len(generated_results)}/{quantity})")
+                try:
+                    # Initialize within the same loop
+                    await client.init(timeout=30, auto_close=False)
                     
-                    try:
-                        resp = await client.generate_content(generation_prompt, files=generation_files)
+                    generated_results = []
+                    current_attempts = 0
+                    max_retries = quantity * 3 + 2
+                    
+                    while len(generated_results) < quantity and current_attempts < max_retries:
+                        current_attempts += 1
+                        print(f"📸 Attempt {current_attempts}: Requesting images (have {len(generated_results)}/{quantity})")
                         
-                        if hasattr(resp, 'images') and resp.images:
-                             print(f"✅ Received {len(resp.images)} images from Gemini")
-                             for img in resp.images:
-                                 if len(generated_results) >= quantity:
-                                     break
+                        try:
+                            resp = await client.generate_content(generation_prompt, files=generation_files)
+                            
+                            if hasattr(resp, 'images') and resp.images:
+                                 print(f"✅ Received {len(resp.images)} images from Gemini")
+                                 for img in resp.images:
+                                     if len(generated_results) >= quantity:
+                                         break
+                                     
+                                     # Standardize functionality
+                                     orig_url = img.url if hasattr(img, 'url') else str(img)
+                                     
+                                     generated_results.append({
+                                         'original_url': orig_url,
+                                         'title': getattr(img, 'title', 'Generated Image'),
+                                         'alt': getattr(img, 'alt', prompt[:100])
+                                     })
+                            else:
+                                 print(f"⚠️ No images in response")
+                                 await asyncio.sleep(1)
                                  
-                                 # Standardize functionality
-                                 orig_url = img.url if hasattr(img, 'url') else str(img)
-                                 
-                                 generated_results.append({
-                                     'original_url': orig_url,
-                                     'title': getattr(img, 'title', 'Generated Image'),
-                                     'alt': getattr(img, 'alt', prompt[:100])
-                                 })
-                        else:
-                             print(f"⚠️ No images in response")
-                             await asyncio.sleep(1)
-                             
+                        except Exception as e:
+                            print(f"⚠️ Generation error in loop: {e}")
+                            await asyncio.sleep(1)
+                    
+                    return generated_results, current_attempts
+
+                finally:
+                    # CRITICAL FIX: Ensure client is closed to prevent timeouts/stale sessions
+                    print("🔒 Closing Gemini session...")
+                    try:
+                        await client.close()
+                        print("✅ Gemini session closed")
                     except Exception as e:
-                        print(f"⚠️ Generation error in loop: {e}")
-                        await asyncio.sleep(1)
-                
-                return generated_results, current_attempts
+                        print(f"⚠️ Error closing session: {e}")
 
             # Run the unified async session
             try:

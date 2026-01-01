@@ -369,9 +369,21 @@
                     style="padding: 20px; border-bottom: var(--border-thick) solid var(--border-color); background: var(--neo-yellow); display: flex; justify-content: space-between; align-items: center;">
                     <div class="chat-title" style="font-weight: 900; font-size: 1.2rem; text-transform: uppercase;">
                         CRACK_GEMINI CHAT</div>
-                    <div class="chat-status"
-                        style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem;">
-                        <div class="status-dot connected"></div> Online
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <button id="resetChatBtn" title="Reset Conversation"
+                            style="background: transparent; border: 2px solid var(--neo-black); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                </path>
+                            </svg>
+                        </button>
+                        <div class="chat-status"
+                            style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem;">
+                            <div class="status-dot connected"></div> Online
+                        </div>
                     </div>
                 </div>
 

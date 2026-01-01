@@ -42,6 +42,9 @@ GEMINI_COOKIES = {
 }
 
 
+# Global Chat History (Manual Context Management)
+CHAT_HISTORY = []
+
 class GeminiClient:
     """
     Real Gemini API client using gemini-webapi library
@@ -421,22 +424,22 @@ class GeminiClient:
             return False
 
     async def send_message(self, message, image=None, cookies=None):
-        """Send a message to Gemini (Stateless/No History)"""
+        """Send a message to Gemini (Stateful via Context Appending)"""
         
         # Determine which cookies to use
-        # Priority: Method Arg > Instance Cookies > Global Env Vars
         current_cookies = cookies or self.cookies
-        
         if not current_cookies or not current_cookies.get('__Secure-1PSID'):
-             # Fallback to global if empty
              global GEMINI_COOKIES
              current_cookies = GEMINI_COOKIES
         
         if not current_cookies:
              return {"success": False, "error": "No valid cookies available. Please check .env"}
 
+        # Use global history if using default cookies
+        use_history = (current_cookies == self.cookies or current_cookies == GEMINI_COOKIES)
+        
         try:
-            # UNPACK COOKIES! library expects positional args (psid, psidts)
+            # UNPACK COOKIES
             psid = current_cookies.get('__Secure-1PSID')
             psidts = current_cookies.get('__Secure-1PSIDTS')
             
@@ -469,20 +472,45 @@ class GeminiClient:
                         f.write(img_data)
                         
                     generation_files = [temp_img_path]
-                    print(f"📎 Processing image for stateless chat: {temp_img_path}")
+                    print(f"📎 Processing image: {temp_img_path}")
                 except Exception as e:
                     print(f"⚠️ Failed to process chat image: {e}")
 
-            # Prepare args
-            print(f"🚀 Sending stateless request (Image: {bool(generation_files)})")
+            # --- CONTEXT CONSTRUCTION ---
+            final_prompt = message
             
+            if use_history:
+                global CHAT_HISTORY
+                if CHAT_HISTORY:
+                    # Append history to prompt
+                    # We format it to look like a conversation transcript
+                    context = "Previous conversation:\n"
+                    for msg in CHAT_HISTORY:
+                        context += f"User: {msg['user']}\n"
+                        context += f"Gemini: {msg['bot']}\n"
+                    context += "\nCurrent message:\n"
+                    final_prompt = context + message
+            
+            print(f"🚀 Sending request (History len: {len(CHAT_HISTORY) if use_history else 0})")
+            
+            # Send Request (Stateless call but with Context)
             if generation_files:
                 response = await temp_client.generate_content(
-                    message, 
+                    final_prompt, 
                     files=generation_files
                 )
             else:
-                response = await temp_client.generate_content(message)
+                response = await temp_client.generate_content(final_prompt)
+            
+            # Save to History
+            if use_history:
+                CHAT_HISTORY.append({
+                    'user': message,
+                    'bot': response.text
+                })
+                # Limit history to last 20 turns to prevent context overflow
+                if len(CHAT_HISTORY) > 20:
+                    CHAT_HISTORY.pop(0)
             
             # Cleanup
             if temp_img_path and os.path.exists(temp_img_path):
@@ -494,7 +522,7 @@ class GeminiClient:
             return {
                 "success": True, 
                 "text": response.text,
-                "history": [] 
+                "history": CHAT_HISTORY if use_history else [] 
             }
         except Exception as e:
             print(f"❌ Chat FATAL error: {e}")
@@ -1165,6 +1193,18 @@ def send_chat_message():
     except Exception as e:
         app.logger.error(f"Chat API error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/chat/reset', methods=['POST'])
+def reset_chat_history():
+    """Reset the global chat history"""
+    try:
+        global CHAT_HISTORY
+        CHAT_HISTORY.clear()
+        print("🧹 Chat history cleared via API")
+        return jsonify({'success': True, 'message': 'Chat history cleared'})
+    except Exception as e:
+         return jsonify({'success': False, 'error': str(e)}), 500
 
 
 

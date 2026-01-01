@@ -440,6 +440,7 @@ document.addEventListener('visibilitychange', () => {
 // ============================================
 
 async function generateImages(retryCount = 0) {
+    let isRetrying = false;
     // Validate input
     const prompt = elements.promptInput.value.trim();
 
@@ -544,6 +545,7 @@ async function generateImages(retryCount = 0) {
             await new Promise(r => setTimeout(r, 3000));
 
             // Recursively call with retryCount = 1
+            isRetrying = true;
             await generateImages(1);
             return; // Exit this execution, let the recursive one handle cleanup
         }
@@ -560,7 +562,7 @@ async function generateImages(retryCount = 0) {
         elements.progressContainer.style.display = 'none';
     } finally {
         // Only cleanup if we are NOT retrying
-        if (retryCount > 0 || !state.isGenerating) {
+        if (!isRetrying) {
             state.isGenerating = false;
             elements.generateBtn.disabled = false;
             elements.generateBtn.querySelector('.btn-text').textContent = 'Generate Masterpiece';

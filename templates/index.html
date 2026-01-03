@@ -15,7 +15,7 @@
         rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="/static/css/styles.css?v=3">
+    <link rel="stylesheet" href="/static/css/styles.css?v=4">
 
     <!-- Favicon (SVG) -->
     <link rel="icon"
@@ -77,6 +77,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
     </header>
 
     <!-- Main Content -->
@@ -358,118 +359,120 @@
                     </div>
                 </div>
                 <p class="progress-text" id="progressText" style="color: var(--text-muted);">Creating your vision...</p>
-            </div>
 
-            <!-- Results Gallery -->
-            <div class="results-section" id="resultsSection" style="display: none;">
-                <div class="results-header">
-                    <div>
-                        <h2 class="results-title">Your Creations</h2>
-                        <!-- Warning Banner -->
-                        <div
-                            style="background: rgba(255, 82, 82, 0.1); border: 1px solid rgba(255, 82, 82, 0.3); color: #ff8080; padding: 10px 16px; border-radius: 8px; margin-top: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
-                            <span><strong>Warning:</strong> Images are not saved permanently. Download your favorites
-                                now before refreshing!</span>
-                        </div>
-                    </div>
 
-                    <button class="download-all-btn" id="downloadAllBtn" class="enhance-btn"
-                        style="background: #fff; border: 3px solid #000; color: #000; padding: 10px 20px; font-weight: 700; cursor: pointer; box-shadow: 4px 4px 0 0 #000; transition: all 0.2s;">
-                        Download All
-                    </button>
-                </div>
-                <div class="gallery" id="gallery"></div>
-            </div>
-
-        </div> <!-- End Image Gen Section -->
-
-        <!-- Chat Section -->
-        <div id="chatSection" class="tab-content" style="display: none; animation: fadeIn 0.3s ease;">
-            <div class="chat-container"
-                style="background: var(--neo-white); border: var(--border-thick) solid var(--border-color); box-shadow: var(--shadow-offset-lg) var(--shadow-offset-lg) 0 0 var(--border-color); margin: 40px auto 80px auto; padding: 0; display: flex; flex-direction: column; height: 600px; max-width: 900px;">
-
-                <div class="chat-header"
-                    style="padding: 20px; border-bottom: var(--border-thick) solid var(--border-color); background: var(--neo-yellow); display: flex; justify-content: space-between; align-items: center;">
-                    <div class="chat-title" style="font-weight: 900; font-size: 1.2rem; text-transform: uppercase;">
-                        CRACK_GEMINI CHAT</div>
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <button id="resetChatBtn" title="Reset Conversation"
-                            style="background: transparent; border: 2px solid var(--neo-black); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path
-                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                </path>
-                            </svg>
-                        </button>
-                        <div class="chat-status"
-                            style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem;">
-                            <div class="status-dot connected"></div> Online
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chat-history" id="chatHistory"
-                    style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
-                    <!-- Welcome Message -->
-                    <div class="chat-message ai" style="align-self: flex-start; max-width: 80%;">
-                        <div class="message-bubble"
-                            style="background: var(--neo-cream); border: var(--border-thick) solid var(--border-color); padding: 16px; box-shadow: 4px 4px 0 0 var(--border-color); font-weight: 500;">
-                            Hello! I'm Gemini. I can help you refine your prompts or just have a chat. How can I assist
-                            you today?
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Input Area -->
-                <div class="chat-input-area"
-                    style="padding: 20px; border-top: var(--border-thick) solid var(--border-color); background: var(--neo-white); display: flex; flex-direction: column; gap: 12px;">
-
-                    <!-- Image Preview -->
-                    <div id="chatImagePreview"
-                        style="display: none; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 8px; width: fit-content; position: relative;">
-                        <img id="chatPreviewImg" style="height: 60px; border-radius: 4px; display: block;">
-                        <button id="removeChatImage"
-                            style="position: absolute; top: -8px; right: -8px; background: #FF5252; color: white; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">×</button>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: flex-end; width: 100%;">
-                        <!-- Upload Button -->
-                        <div style="position: relative;">
-                            <input type="file" id="chatFileInput" accept="image/*" hidden>
-                            <button id="chatUploadBtn" class="chat-action-btn" title="Add Image"
-                                style="background: var(--neo-white); color: var(--text-main); border: var(--border-thick) solid var(--border-color); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 3px 3px 0 0 var(--border-color); transition: 0.1s;">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                <!-- Results Gallery -->
+                <div class="results-section" id="resultsSection" style="display: none;">
+                    <div class="results-header">
+                        <div>
+                            <h2 class="results-title">Your Creations</h2>
+                            <!-- Warning Banner -->
+                            <div
+                                style="background: rgba(255, 82, 82, 0.1); border: 1px solid rgba(255, 82, 82, 0.3); color: #ff8080; padding: 10px 16px; border-radius: 8px; margin-top: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                <span><strong>Warning:</strong> Images are not saved permanently. Download your
+                                    favorites
+                                    now before refreshing!</span>
+                            </div>
+                        </div>
+
+                        <button class="download-all-btn" id="downloadAllBtn" class="enhance-btn"
+                            style="background: #fff; border: 3px solid #000; color: #000; padding: 10px 20px; font-weight: 700; cursor: pointer; box-shadow: 4px 4px 0 0 #000; transition: all 0.2s;">
+                            Download All
+                        </button>
+                    </div>
+                    <div class="gallery" id="gallery"></div>
+                </div>
+
+            </div> <!-- End Image Gen Section -->
+
+            <!-- Chat Section -->
+            <div id="chatSection" class="tab-content" style="display: none; animation: fadeIn 0.3s ease;">
+                <div class="chat-container"
+                    style="background: var(--neo-white); border: var(--border-thick) solid var(--border-color); box-shadow: var(--shadow-offset-lg) var(--shadow-offset-lg) 0 0 var(--border-color); margin: 40px auto 80px auto; padding: 0; display: flex; flex-direction: column; height: 600px; max-width: 900px;">
+
+                    <div class="chat-header"
+                        style="padding: 20px; border-bottom: var(--border-thick) solid var(--border-color); background: var(--neo-yellow); display: flex; justify-content: space-between; align-items: center;">
+                        <div class="chat-title" style="font-weight: 900; font-size: 1.2rem; text-transform: uppercase;">
+                            CRACK_GEMINI CHAT</div>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <button id="resetChatBtn" title="Reset Conversation"
+                                style="background: transparent; border: 2px solid var(--neo-black); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
                                     <path
-                                        d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
                                     </path>
                                 </svg>
                             </button>
+                            <div class="chat-status"
+                                style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem;">
+                                <div class="status-dot connected"></div> Online
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-history" id="chatHistory"
+                        style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+                        <!-- Welcome Message -->
+                        <div class="chat-message ai" style="align-self: flex-start; max-width: 80%;">
+                            <div class="message-bubble"
+                                style="background: var(--neo-cream); border: var(--border-thick) solid var(--border-color); padding: 16px; box-shadow: 4px 4px 0 0 var(--border-color); font-weight: 500;">
+                                Hello! I'm Gemini. I can help you refine your prompts or just have a chat. How can I
+                                assist
+                                you today?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Area -->
+                    <div class="chat-input-area"
+                        style="padding: 20px; border-top: var(--border-thick) solid var(--border-color); background: var(--neo-white); display: flex; flex-direction: column; gap: 12px;">
+
+                        <!-- Image Preview -->
+                        <div id="chatImagePreview"
+                            style="display: none; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 8px; width: fit-content; position: relative;">
+                            <img id="chatPreviewImg" style="height: 60px; border-radius: 4px; display: block;">
+                            <button id="removeChatImage"
+                                style="position: absolute; top: -8px; right: -8px; background: #FF5252; color: white; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">×</button>
                         </div>
 
-                        <textarea id="chatInput" placeholder="Type a message..." rows="1"
-                            style="flex: 1; background: var(--neo-cream); border: var(--border-thick) solid var(--border-color); padding: 12px 16px; font-family: var(--font-display); resize: none; min-height: 50px; font-size: 1rem; border-radius: 0; box-shadow: inset 3px 3px 0 0 rgba(0,0,0,0.05);"></textarea>
+                        <div style="display: flex; gap: 12px; align-items: flex-end; width: 100%;">
+                            <!-- Upload Button -->
+                            <div style="position: relative;">
+                                <input type="file" id="chatFileInput" accept="image/*" hidden>
+                                <button id="chatUploadBtn" class="chat-action-btn" title="Add Image"
+                                    style="background: var(--neo-white); color: var(--text-main); border: var(--border-thick) solid var(--border-color); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 3px 3px 0 0 var(--border-color); transition: 0.1s;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </div>
 
-                        <button id="sendChatBtn" class="send-chat-btn"
-                            style="background: var(--neo-pink); color: white; border: var(--border-thick) solid var(--border-color); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 3px 3px 0 0 var(--border-color); transition: 0.1s;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <line x1="22" y1="2" x2="11" y2="13"></line>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                            </svg>
-                        </button>
+                            <textarea id="chatInput" placeholder="Type a message..." rows="1"
+                                style="flex: 1; background: var(--neo-cream); border: var(--border-thick) solid var(--border-color); padding: 12px 16px; font-family: var(--font-display); resize: none; min-height: 50px; font-size: 1rem; border-radius: 0; box-shadow: inset 3px 3px 0 0 rgba(0,0,0,0.05);"></textarea>
+
+                            <button id="sendChatBtn" class="send-chat-btn"
+                                style="background: var(--neo-pink); color: white; border: var(--border-thick) solid var(--border-color); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 3px 3px 0 0 var(--border-color); transition: 0.1s;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
         </div> <!-- End Container -->
     </main>
@@ -548,7 +551,7 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="/static/js/app.js?v=3"></script>
+    <script src="/static/js/app.js?v=4"></script>
 </body>
 
 </html>

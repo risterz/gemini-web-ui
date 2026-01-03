@@ -1055,32 +1055,31 @@ function initializeChatSystem() {
     } else {
         console.error("❌ Chat upload buttons NOT found!", { chatUploadBtn, chatFileInput });
     }
-}
 
 
-// 4. Reset Chat
-const resetBtn = document.getElementById('resetChatBtn');
-if (resetBtn) {
-    resetBtn.addEventListener('click', async () => {
-        if (confirm("Clear conversation history?")) {
-            try {
-                const response = await fetch('/api/chat/reset', { method: 'POST' });
-                const data = await response.json();
-                if (data.success) {
-                    const history = document.getElementById('chatHistory');
-                    // Keep only the first welcome message
-                    const welcome = history.firstElementChild;
-                    history.innerHTML = '';
-                    if (welcome) history.appendChild(welcome);
+    // 4. Reset Chat
+    const resetBtn = document.getElementById('resetChatBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', async () => {
+            if (confirm("Clear conversation history?")) {
+                try {
+                    const response = await fetch('/api/chat/reset', { method: 'POST' });
+                    const data = await response.json();
+                    if (data.success) {
+                        const history = document.getElementById('chatHistory');
+                        // Keep only the first welcome message
+                        const welcome = history.firstElementChild;
+                        history.innerHTML = '';
+                        if (welcome) history.appendChild(welcome);
 
-                    showError("Chat History Cleared"); // Using toast for success msg
+                        showError("Chat History Cleared"); // Using toast for success msg
+                    }
+                } catch (e) {
+                    console.error("Reset failed", e);
                 }
-            } catch (e) {
-                console.error("Reset failed", e);
             }
-        }
-    });
-}
+        });
+    }
 }
 
 async function sendChatMessage() {
